@@ -1,0 +1,530 @@
+
+			 ____  ____  ____  _  _____ _____
+			/ ___\/   _\/  _ \/ \/    //    /
+			|    \|  /  | | \|| ||  __\|  __\
+			\___ ||  \__| |_/|| || |   | |   
+			\____/\____/\____/\_/\_/   \_/    
+
+# INTRODUCTION 
+
+
+SCDIFF is designed to analyze the cell differentiation process 
+using time-series single cell RNA-seq data. It can be used to predict the
+transcription factors, which regulate the cell differentiation process. It
+also visualizes the differentiation process using a graph, in which nodes
+represent different sub-population cells and edges denote the 
+differentiation paths. 
+
+![flowchart](./scdiff/img/FlowChart1.jpg)
+
+# PREREQUISITES
+
+* python (python 2 and python 3 are both supported)  
+It was installed by default for most Linux distribution and MAC
+If not, please check [https://www.python.org/downloads/](https://www.python.org/downloads/) for installation 
+instructions. 
+
+* Python packages dependencies:  
+-- scikit-learn   
+-- scipy  
+-- numpy  
+The python setup.py script will try to install these packages automatically.
+However, please install them manually if, by any reason, the automatic 
+installation fails. 
+
+* If using Graphic User Interface(GUI), please instal the Tkinter package.
+Please check [http://tkinter.unpythonic.net/wiki/How_to_install_Tkinter](http://tkinter.unpythonic.net/wiki/How_to_install_Tkinter)
+to install Tkinter package. 
+
+
+# INSTALLATION
+ 
+cd to the package root directory 
+
+```shell
+$cd scdiff
+```
+run python setup to install   
+
+```shell
+$python setup.py install
+```
+    
+Linux, Mac:
+
+```shell  
+$sudo python setup.py install 
+```
+
+# USAGE
+
+```shell
+usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l LargeType] 
+                   [-d DSYNC][-a VIRTUALANCESTOR]
+
+  -h, --help            show this help message and exit
+  
+  -i INPUT, --input INPUT, required 
+                        input single cell RNA-seq expression data
+                        
+  -t TF_DNA, --tf_dna TF_DNA, required
+                        TF-DNA interactions used in the analysis
+                        
+  -k CLUSTERS, --clusters CLUSTERS, required
+                        how to learn the number of clusters for each time
+                        point? user-defined or auto? if user-defined, please
+                        specify the configuration file path. If set as "auto"
+                        scdiff will learn the parameters automatically.
+                        
+  -o OUTPUT, --output OUTPUT, required
+                        output folder to store all results
+                        
+  -s SPEEDUP, --speedup SPEEDUP(1/None), optional
+                        If set as 'True' or '1', SCIDFF will speedup the running
+                        by reducing the iteration times.
+                        (use less stringent convergence criteria).
+                        
+  -l LARGETYPE,  --largetype LARGETYPE (1/None), optional
+						if specified as 'True' or '1', scdiff will use LargeType mode to 
+						improve the running efficiency (both memory and time). 
+						As spectral clustering is not scalable to large data,
+						PCA+K-Means clustering was used instead. The running speed is improved 
+						significantly but the performance is relatively worse. If there are
+						more than 2k cells at each time point on average, it is highly 
+						recommended to use this parameter to improve time and memory efficiency.
+						
+						
+  -d DSYNC,  --dsync DSYNC (1/None), optional
+						If specified as 'True' or '1', the cell synchronization will be disabled. 
+						If the users believe that cells at the same time point are similar in terms of 
+						differentiation/development. The synchronization can be disabled.
+  
+  -a VIRTUALANCESTOR, --virtualAncestor VIRTUALANCESTOR (1/None), optional
+						scdiff requires a 'Ancestor' node (the starting node, 
+						all other nodes are descendants).  By default, 
+						the 'Ancestor' node is set as the first time point. The hypothesis behind is :  
+						The cells at first time points are not differentiated yet
+						( or at the very early stage of differentiation and thus no clear sub-groups, 
+						all Cells at the first time point belong to the same cluster).  
+						  
+						If it is not the case, users can set -a as 'True' or '1' to enable
+						a virtual ancestor before the first time point.  The expression of the 
+						virtual ancestor is the median expression of all cells at first time point.   
+						
+						
+```
+
+# MODULES  & FUNCTIONS
+
+## scdiff module 
+This module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on 
+the analysis result. 
+
+
+**[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**
+This class defines the differentiation graph. 
+
+**Parameters**:  
+
+* **Cells**:  Cell instances   
+Please read [cell](#cell) Class definition for details.   
+* **kc**: String   
+clustering config. It's a string with either 'auto' or clustering configure file path (-k parameter).  
+* **largeType**: None(default) or String     
+whether the single cell is a 'largeType' (largeType denotes the number of cells in datasets is very large  (typically >2k cells). 
+In such case, the performance will be scarified to improve the running efficiency (e.g. using K-means instead of spectral clustering). 
+If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
+
+**Output**:  
+A graph instance with all nodes and edges, which represents the differentiation structure for given inputs. 
+
+**Example**:
+
+```python 
+import scdiff
+from scdiff import *
+graph1=scdiff.Graph(Cells,'auto',None)  #Cells: List of Cell instances 
+ 
+```
+
+**[scdiff.Cell(Cell_ID, TimePoint, Expression,typeLabel)](#cell)<a id="cell"></a>**  
+This class defines the cell. 
+
+**Parameters**:  
+
+* **Cell_ID**: String  
+The ID  of the cell.
+* **TimePoint**: Integer  
+Measurement TimePoint of the cel, Integer.  
+* **Expression**: List of float  
+Expression of all genes.
+* **Cell_Label**: String  
+The true label for the cell if available, 'NA' if not available. (Note, we don't need  this information for the  model, but it's  useful when
+analyzing the result).
+
+**Output**:  
+A Cell class instance  (with all information regarding to  a cell)
+
+**Example**:
+
+```python
+import scdiff
+from scdiff.scdiff import *
+c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
+c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
+AllCells=[c1,c2]
+```
+
+**[scdiff.Clustering(Cells, kc,largeType=None)](#graph)** 
+
+**Parameters**:
+
+* **Cells**:  List of Cell
+Please read [Cell](#cell) Class definition for details. 
+* **kc**: String   
+clustering config. It's a string with either 'auto' or clustering configure file path (-k parameter).
+* **largeType**: None(default) or String   
+whether the single cell is a 'largeType' (largeType denotes the number of cells in datasets is very large  (typically >2k cells). 
+In such case, the performance will be scarified to improve the running efficiency (e.g. using K-means instead of spectral clustering). 
+If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
+
+**Method**: **[getClusteringPars()](#clustering_getClusteringPars)**  
+This class represents the clustering. 
+
+* **Output**:
+Parameters needed for clustering-dCK and dBS. This function can be used to learn the
+clustering parameters.  
+* **dCK**: dictionary   
+key：timePoint, value: K (number of clusters, Integer) , e.g {14:1, 16:2, 18:5}  
+number of clusters for clustering at each time point.    
+
+* **dBS**: dictionary  
+key: timePoint, value: seed (Integer), e.g. {14:0, 16:0, 18:1}  
+clustering seed for each time point
+
+*  **Example**:
+
+```python
+import scdiff
+from scdiff import *
+Clustering_example=scdiff.Clustering(Cells,'auto',None)
+[dCK,dBS]=Clustering_example.getClusteringPars()
+```
+**Method**: **[performClustering()](#clustering_performClustering)**  
+
+* **Output**: Clusters instances (Clustering results), please check [Cluster](#cluster) 
+for details. This function is used to cluster all the nodes into clusters(Graph nodes).
+
+* **Example**:   
+
+```python
+import scdiff 
+from scdiff import *
+Clustering_example=scdiff.Clustering(Cells,'auto',None)
+Clusters=Clustering_example.performClustering()
+
+```
+
+**[scdiff.Cluster((Cells,TimePoint,Cluster_ID))](#cluster)<a id="cluster"></a>**  
+This class defines the node in the differentiation graph. 
+
+**Parameters**:  
+
+* **Cells**: List of Cell
+[Cell](#cell) instances.   
+* **TimePoint**: Integer  
+Initial Time Point for Cluster, it's the dominant measurement time for 
+all cells within the cluster.   
+* **Cluster_ID**: String   
+Cluster ID.  
+
+**Method**: **[getAvgEx()](#clusters_getAvgEx)**:
+
+* **Output**:  List of float, this function calculates the average 
+gene expression of all cells in cluster. 
+* **Example**:
+
+```python
+import scdiff 
+from scdiff import *
+cluster1=scdiff.Cluster(Cells,14,'C1')
+AvgEx=cluster1.getAvgEx()
+
+```
+
+**[scdiff.Path(fromNode,toNode,Nodes)](#path)**
+
+This class defines the edge in the differentiation graph. 
+
+**Parameters**:
+
+* **fromNode**: Cluster  
+The beginning end  of an edge, Cluster instance
+
+* **toNode**: Cluster
+The ending end of an edge, Cluster instance 
+
+* **Nodes**: List of Cluster  
+All Nodes in Graph. 
+
+
+**Method**: **[getFC()]()**:
+
+* **Output**: Get the log fold change (2D List): [[foldchange,geneIndex,fromEx,toEx],...] along the edge(Path), from fromNode to toNode. 
+
+**Method**: **[getetf()]()**:
+
+* **Output**: Get the potential regulating TFs **[etf,dtf]** for given edge (fromNode->toNode).
+* **etf**: 2D List: [[p-value,TF_name],...], which represents the regulating TFs and p-values for each edge
+* **dtf**: 2D List: [[p-value,TF_name],...], sub-list of etf, which represents the regulating TFs (and p-value) with different expression for
+different differentiation paths. 
+
+* **example**:
+
+```python
+import scdiff 
+from scdiff import *
+C1=scdiff.Cluster(Cells_1,14,'C1')
+C2=scdiff.Cluster(Cells_2,16,'C2')
+AC=[C1,C2,...,Cn]
+p1=scdiff.Path(C1,C2,AC)
+fc=p1.getFC()
+[etf,dtf]=p1.getetf()
+
+```
+
+##  viz module 
+This module is designed to visualize the differentiation graph structure using JavaScript.   
+
+**[viz.viz(exName,Graph,GeneNames,dTD,output)](#viz)**
+
+**Parameters**:
+
+* **exName**: String
+The name of the output visualization result. 
+
+* **Graph**: Graph 
+Graph instance, please refer [Graph](#graph).
+
+* **GeneNames**: List of String 
+
+* **dTD**: Dictionary   
+Key: String, TF name.  
+Value: List of String, Gene name.
+e.g. {'NKX2-1': ['SNX13','RAB30',...]}
+* **output**: String   
+output directory name 
+
+**Output**:
+a visualization folder with HTML page, JavaScript Code and Graph Structure in JSON format. 
+
+
+**Example**:
+
+```python 
+import scdiff 
+from scdiff import *
+exName='example'
+output_directory='example_out'
+GeneNames=['SNX13','RAB30',...]
+dTD={'NKX2-1': ['SNX13','RAB30',...]}
+g1=Graph(Cells,'auto',None)
+viz.viz(exName,g1,GeneNames,dTD,output_directory)
+
+```
+Then, you will find the  visualized result page in HTML under 'example_out' directory.
+
+
+# RESULT AND VISUALIZATION
+
+The results are given under the specified directory. 
+The predicted model was provided as a json file, which is visualized by the
+provided JavaScript. 
+
+![example_out_fig](./scdiff/img/example_out.png)
+
+The following is the manual for the visualization page. 
+
+**Global CONFIG (Left panel)**:
+  
+* **RESET**: It restores all configs to default.   
+The slider resizes the visualization. 
+
+* **TF CONFIG** :  
+	* **Show/Hide TF** : display/hide the regulating TFs for each path.  
+	* **Explore  TF** : highlight the regulating paths for given TF.  
+
+* **GENE CONFIG**:  
+	* **Show/Hide DE**: display/hide the differential genes for each path. 
+	* **Explore DE gene** : highlight the paths with those DE genes.     
+
+* **Download**: 
+	* **Generate Figure**: download the visualization figure.
+	* **Generate TF download File** : download regulating TFs for all paths.
+	* **Generate DE download file **: download DE genes for all paths. 
+
+**Visualization Canvas (Right Panel)**:
+
+* mouse over each node to show the pie chart of cell types within each node. 
+* left click each node to show:
+	* Cell IDs (with labels) within the node. 
+	* Regulating TFs for the edge ending at the node.
+	* DE genes for the edge ending at the node.
+	* Regulating TFs for the whole path ending at the node. 
+	
+# EXAMPLES
+ 
+Run scdiff on given time-series single cell RNA-seq data 
+
+**1) Run with automatic config**
+
+```shell
+$ scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out>
+```
+* **-i/--input**:   
+**example.E** is the single cell RNA-seq dataset with following format (tab delimited)
+
+	```
+	cell_ID	time	cell_label	ex_gene1	ex_gene2	...	ex_geneN
+	```
+
+	* cell_ID: ID of the cell.
+	* time: measure time of the cell RNA-seq.
+	* cell_lable: known label for the cell (if available) ,if not , denote as NA.
+	* ex_genei: expression of gene i (log2 gene expression value). Gene expression can be FPKM or RPM or any other acceptable gene expression measurements.   
+	
+	Please read **example.E** for an example of acceptable time-series single cell dataset format.  
+
+* **-t/--tfdna**:  
+**example.tf_dna** provides the TF-DNA interaction information used in this study (TF target inforamtion) with tab delimited format.
+	
+	```
+	TF	TF_target	Score
+	```
+	For example: 
+	
+	```
+	ZNF238	TIMM8B	0.9
+	SOX9	TIMM8B	0.9
+	ZEB1	TIMM8B	0.9
+	GATA4	TIMM8B	0.9
+	CEBPA	RAB30	0.9
+	NKX2-1	RAB30	0.9
+	SRF	RAB30	0.9
+	SOX5	RAB30	0.9
+	SRY	RAB30	0.9
+	POU1F1	RAB30	0.9
+	POU2F1	RAB30	0.9
+	NFKB1	KRI1	0.9
+	E2F1	C11ORF35	0.9
+	DSP	C11ORF35	0.9
+	ELSPBP1	C11ORF35	0.9
+	EGR2	C11ORF35	0.9
+	EGR1	C11ORF35	0.9
+	NR2F2	C11ORF35	0.9
+	LMO2	C11ORF35	0.9
+	ESR2	C11ORF35	0.9
+	HNF1A	C11ORF35	0.9
+	EGR3	C11ORF35	0.9
+	```
+The TF-DNA directory provides the TF-DNA interaction file used in this study. 
+* **-k/--clusters**:  
+This specifies the clustering parameter (String). It's need to be either 'auto' or  path to the 'config' file.
+Here, 'auto' denotes the clustering parameters will be learned automatically. 
+
+* **-o/--output**:  
+**example_out** is the specified output directory. 
+
+
+**2) Run with user-defined config** 
+
+```shell
+$scdiff -i <example.E>  -t <example.tf_dna> -k <example.config> -o <example_out>
+```
+
+The format of example.E and example.tf_dna are the same as described above. 
+
+**example.config** specifies the custom initial clustering parameters. This was used when we have some prior knowledge.
+For example, if we know they are how many sub-populations within each time, we can just directly specify the clustering parameters using
+the example.config file, which provides better performance. 
+
+example.config format(tab delimited)
+
+```
+time	#_of_clusters
+```
+For example:  
+
+```
+14  1  
+16  2  
+18  5  
+```
+However, if we don't have any prior knowledge about the sub-populations within each time point. We will just use the automatic initial clustering. 
+:-k auto.
+
+**3) Run scdiff on large single cell dataset** 
+
+
+```shell
+$scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out> -l True -s True
+```
+
+-i, -t, -k, -o parameters were discussed above. 
+
+* **-l/--large (optional)**  
+String, if specified as 'True' or '1', scdiff will use LargeType mode to improve the running efficiency (both memory and time).
+The performance will be sacrificed to some extent. K-means will be used for Clustering instead of Spectral clustering. 
+
+* **-s/--speedup (optional)**  
+Speedup the convergence, it will reduce the running time significantly. This is highly recommended for large dataset. 
+Based on testing on lung single cell dataset (Treutlein 2014), the speedup performance is just slightly worse (2 more cells were miss-assigned )
+
+
+
+**(4) Run scdiff on large single cell dataset with synchronization disabled and virtual ancestor**
+```shell 
+$scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out> -l True -s True -d True -a True
+```
+-i, -t , -k, -o, -l ,-s parameters were defined above. 
+
+* **-d/--dsync (optional)**  
+If set as 'True' or '1', the cell synchronization will be disabled.  By default, the cell synchronization is enabled. 
+For large dataset, the users can disable the synchronization to speedup. If the authors have prior knowledge, the synchronization of cells are 
+relatively good, users can also disable the synchronization.  
+
+* **-a/--virtualAncestor (optional) **  
+If set as 'True' or '1', the virtual ancestor node will be built. By default, the ancestor node is the first time point (all cells at the first time point).
+
+**5) example running result**  
+
+The following link present the results for an example running.   
+[example_out](http://www.cs.cmu.edu/~jund/scdiff/result/treutlein2014_lung/treutlein2014_lung.html)
+
+# CREDITS
+ 
+This software was developed by ZIV-system biology group @ Carnegie Mellon University.  
+Implemented by Jun Ding
+
+
+# LICENSE 
+ 
+This software is under MIT license.  
+see the LICENSE.txt file for details. 
+
+
+# CONTACT
+
+zivbj at cs.cmu.edu  
+jund  at cs.cmu.edu
+
+
+
+
+                                 
+                                 
+                                 
+                                 
+                                 
+
+                                                     
