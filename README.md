@@ -361,7 +361,7 @@ The slider resizes the visualization.
 * **Download**: 
 	* **Generate Figure**: download the visualization figure.
 	* **Generate TF download File** : download regulating TFs for all paths.
-	* **Generate DE download file **: download DE genes for all paths. 
+	* **Generate DE download file**: download DE genes for all paths. 
 
 **Visualization Canvas (Right Panel)**:
 
@@ -493,7 +493,7 @@ If set as 'True' or '1', the cell synchronization will be disabled.  By default,
 For large dataset, the users can disable the synchronization to speedup. If the authors have prior knowledge, the synchronization of cells are 
 relatively good, users can also disable the synchronization.  
 
-* **-a/--virtualAncestor (optional) **  
+* **-a/--virtualAncestor (optional)**  
 If set as 'True' or '1', the virtual ancestor node will be built. By default, the ancestor node is the first time point (all cells at the first time point).
 
 **5) example running result**  
