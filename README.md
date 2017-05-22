@@ -20,7 +20,7 @@ differentiation paths.
 # PREREQUISITES
 
 * python (python 2 and python 3 are both supported)  
-It was installed by default for most Linux distribution and MAC
+It was installed by default for most Linux distribution and MAC.  
 If not, please check [https://www.python.org/downloads/](https://www.python.org/downloads/) for installation 
 instructions. 
 
@@ -121,7 +121,7 @@ This module is used to perform the single cell differentiation analysis and it b
 the analysis result. 
 
 
-**[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**
+**[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**  
 This class defines the differentiation graph. 
 
 **Parameters**:  
@@ -147,7 +147,7 @@ graph1=scdiff.Graph(Cells,'auto',None)  #Cells: List of Cell instances
  
 ```
 
-**[scdiff.Cell(Cell_ID, TimePoint, Expression,typeLabel)](#cell)<a id="cell"></a>**  
+**[scdiff.Cell(Cell_ID, TimePoint, Expression,typeLabel)](#cell)<a id="cell"></a>**    
 This class defines the cell. 
 
 **Parameters**:  
@@ -175,7 +175,8 @@ c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
 AllCells=[c1,c2]
 ```
 
-**[scdiff.Clustering(Cells, kc,largeType=None)](#graph)** 
+**[scdiff.Clustering(Cells, kc,largeType=None)](#graph)**   
+This class represents the clustering.  
 
 **Parameters**:
 
@@ -189,8 +190,7 @@ In such case, the performance will be scarified to improve the running efficienc
 If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
 
 **Method**: **[getClusteringPars()](#clustering_getClusteringPars)**  
-This class represents the clustering. 
-
+ 
 * **Output**:
 Parameters needed for clustering-dCK and dBS. This function can be used to learn the
 clustering parameters.  
