@@ -8,7 +8,7 @@
 # INTRODUCTION 
 
 
-SCDIFF is designed to analyze the cell differentiation process 
+SCDIFF is a python package designed to analyze the cell differentiation process 
 using time-series single cell RNA-seq data. It can be used to predict the
 transcription factors, which regulate the cell differentiation process. It
 also visualizes the differentiation process using a graph, in which nodes
@@ -168,11 +168,11 @@ A Cell class instance  (with all information regarding to  a cell)
 **Example**:
 
 ```python
->>>import scdiff
->>>from scdiff.scdiff import *
->>>c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
->>>c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
->>>AllCells=[c1,c2]
+import scdiff
+from scdiff.scdiff import *
+c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
+c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
+AllCells=[c1,c2]
 ```
 
 **[scdiff.Clustering(Cells, kc,largeType=None)](#graph)**   
