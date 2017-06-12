@@ -117,8 +117,7 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 # MODULES  & FUNCTIONS
 
 ## scdiff module 
-This module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on 
-the analysis result. 
+This python module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on the analysis result. 
 
 
 **[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**  
