@@ -168,11 +168,11 @@ A Cell class instance  (with all information regarding to  a cell)
 **Example**:
 
 ```python
-import scdiff
-from scdiff.scdiff import *
-c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
-c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
-AllCells=[c1,c2]
+>>>import scdiff
+>>>from scdiff.scdiff import *
+>>>c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
+>>>c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
+>>>AllCells=[c1,c2]
 ```
 
 **[scdiff.Clustering(Cells, kc,largeType=None)](#graph)**   
