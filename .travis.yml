@@ -14,12 +14,7 @@ notifications:
 deploy:
   provider: pypi
   user: johnding
-<<<<<<< HEAD
   password: 
-=======
-  password:
-      secure: u+yksxNglbxui28OQUDClwxqg0654TJFE28k1jC1IgGNqPlvb0+uDe/1NWQfg+BxkLWhHGFI+9apvWHBIDxaEUyCicrBsMlx9fMgBeAYfpcZwEEULj/ey2x74lfbILuueyvp7KlCEdWUj2ftoVROtC1wDkYbtO5mvD2Oujby9EYWapIQTpOCTuzgomNf+uP/EC+NN+fSCZHFEXPq3Le9fdz1Y9htvdOyYM9FFpuPhHEC6L8G8IqdeaXpTuGwpQX6Dh5Bo03J6bTbEKsrS8XMe2iGXZyNmFzsPhgfm1ocWezFoI2BowQ3D9DOiEQ3ZfbI2o08QpHpgtR/8Co1ZNFC6iS4OvrQyyQlaFIQFL0XAfsSk/meh0KoUzcaJRKekvDa1sYIcPZrDReWY0d+AeNrwxdJBvVEvkYcDd+XNmB/rNdVWuQNalBoqtsWvnzZ7+MPSbcljahrubexQr54ylqV1WdCv0Bl0kx6pzaV1vtIjHRS/Sn6oeq18A/SFy0nrt4yJXvTsy8t+XW62Bg0wy6H/y8s4fVJ8aIBiqvNQAWy26jcS4YqAjDw+YCOUKcl536aHcuaLvtbGOuzbEHRiyixXq7nSTYwthnghuPuV1PTduWgnBDVjq18PkBlwKBoXXVgthpVznY/0TtBeIFdkfwYb4NPBMI6VPb8TUM9KrezDog=
->>>>>>> 4de614b5dcc9f406b2dc15bf0848b2093f920ab1
   on:
     tags: true
     all_branches: true
