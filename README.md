@@ -8,7 +8,7 @@
 # INTRODUCTION 
 
 
-SCDIFF is designed to analyze the cell differentiation process 
+SCDIFF is a python package designed to analyze the cell differentiation process 
 using time-series single cell RNA-seq data. It can be used to predict the
 transcription factors, which regulate the cell differentiation process. It
 also visualizes the differentiation process using a graph, in which nodes
@@ -117,8 +117,7 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 # MODULES  & FUNCTIONS
 
 ## scdiff module 
-This module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on 
-the analysis result. 
+This python module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on the analysis result. 
 
 
 **[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**  
