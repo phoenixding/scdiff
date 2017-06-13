@@ -3,6 +3,11 @@ python:
 - '2.7'
 - '3.5'
 sudo: false
+before_install:
+- sudo apt-get install python-scipy
+- pip install numpy
+- pip install scikit-learn
+
 install:
 - python setup.py install
 notifications:
