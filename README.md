@@ -6,7 +6,7 @@
 			\____/\____/\____/\_/\_/   \_/    
 
 [![Build Status](https://travis-ci.org/phoenixding/scdiff.svg?branch=master)](https://travis-ci.org/phoenixding/scdiff)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
 # INTRODUCTION 
