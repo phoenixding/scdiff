@@ -5,6 +5,10 @@
 			\___ ||  \__| |_/|| || |   | |   
 			\____/\____/\____/\_/\_/   \_/    
 
+[![Build Status](https://travis-ci.org/phoenixding/scdiff.svg?branch=master)](https://travis-ci.org/phoenixding/scdiff)
+
+
+
 # INTRODUCTION 
 
 
