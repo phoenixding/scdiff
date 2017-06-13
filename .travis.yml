@@ -1,5 +1,4 @@
 language: python
-
 python:
 - '2.7'
 - '3.5'
@@ -8,7 +7,6 @@ before_install:
 - pip install numpy
 - pip install scipy
 - pip install scikit-learn
-
 script:
 - python setup.py test
 notifications:
@@ -16,11 +14,11 @@ notifications:
 deploy:
   provider: pypi
   user: johnding
-  password: 
+  password:
     tags: true
     distributions: sdist bdist_wheel
     repo: PyGithub/PyGithub
     python: '2.7'
 env:
   global:
-    secure: f/5Bfm/AYkjdCh1FNfjt/o6OUbSlRI0bUWGgY7pik4xREG2U1fYLQZOYqkTet4wF78hxDR7LSJgvvU6pDjb/L9WsSH7ArJq5SEvJw4cXQ36XPprqdVfg6NVzYWqnLMuV9vJIMgHWAiAIymzuXweRK5S+KZhdsv6HYhrr6A5fLXzp6NBpX4ot3GAVJTORCJFHWhWEVfN1BVMJnOQohQUzPpig2WjcOw2a/injA392THf01QmEQdHUevgHd1eICTucvHFBvL8bVaT1HfafJx3nrICfr9g/+MzttRuqsFO7HTYWeaV56p+glgblaXXR/o0E/A405BR3Wy/lMbiaE3rk+rkhb/UUeGdUskvrqoqA6NGVkAnVpo30IDbLXhA+ZGhlCuOCTrJ4xNPoMZEg4c5S0u8Pr4xiSV22bZptMt1yGhElo4Jxztch8xVCSN+5cY65X3vcv5sBIcDO8flahNY5/ftg6jRKtpvBLZ0CVGEKMw6pHGr51pjxFDJAWjos9NSK92F3wbdiilhBIeNL5BlP4+5h2K9XaAD/JErJqXPq4SHnNnga3CxzlYexLrqkmfEi79ZKNrztQwXWmYlPUlfuQtThkzCHeCX2ojdWXtSof9A0YjpuSyGpgeqknMlQ1Lmy4jDMAIwEO8hEZyWssGut7DPku6m5KKy11VW3uKNIwFk=
+    secure: jLWuzNa/HxDhbYWjd5G0n2IkKiBPuUhKc9jMCmUGJ8PmqMRxCJVGsO5g+dLcmhgeGKvYrLC5QqU5fildBewdP6Sh8sKZuhGj6yp/UapbrIKeEznrCi6d8koTn5fv9EKACgYa/M/VV4g5FyOCi0u7Io5/1Tebl8AlDyJbbylmqQw5eeeH96VJpwcD+Q+LUj8K3eLC2vIMm5YymkKSDW3UiuXkHWKHropVJb1/IshxOXM2pcUpcu+Y6SEns/FYeuwdGpMzuOLOZIhFhpO7DXB8QyRiShj5B5pOL8KLJH5+EBvR2BGaLuYLL8B/A7Ms8WiRGgi6A/3Cg9OWsjbF1FOel/SNLhLHPkq4cf31VNFspecgznNrF0dopwzJxPpDz4hbXXlGMxU+ZavDwKeZL02nJrYB/I+OJDI214fTOL2K0TEtqCJRLc1N5kljkuOWReQ7YP6m3vLL+KE7EuFVzx/56RHpyOzSu7nNcguY9JLsxY6bFO0PqcpJQ7ce5/djpET9B9bEAufqwZKd6qokkFA53YXRXoGA6uy0d5plmq3TbRx1KKsfk5AtYSWe9yDLb/9sPzf3J9u32yVGTpE8LQa7eWcXf18UbzJjw1EchslJlrTHCwfBe1jIW8T3pa41ceo7K4gLJM6HC+OLxhfJrqJtMw+HBhFTATVqiXr/3eoDBLw=
