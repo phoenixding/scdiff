@@ -1,9 +1,9 @@
 language: python
-sudo: required
+
 python:
 - '2.7'
 - '3.5'
-sudo: false
+sudo: true
 before_install:
 - apt-get install python-scipy
 - pip install numpy
