@@ -5,8 +5,8 @@ python:
 - '3.5'
 sudo: true
 before_install:
-- sudo apt-get install python-scipy
 - pip install numpy
+- pip install scipy
 - pip install scikit-learn
 
 script:
