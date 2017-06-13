@@ -19,5 +19,5 @@ deploy:
   on:
     tags: true
     distributions: sdist bdist_wheel
-    repo:	phoenixding/scdiff
+    repo: phoenixding/scdiff
     python: '2.7'
