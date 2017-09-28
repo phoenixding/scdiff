@@ -137,30 +137,30 @@ The input file has the following formatting requirements:
 		Please note that the cell label is only used for analyzing the result, we did not use this information in scdiff method. 
 		* __4th- columns__: Gene expression values.  
 	
-Example input:     
-[example.E](example/example.E)
+	Example input:     
+	[example.E](example/example.E)
 
- 
 * __-t/--tf_dna__  
- This specifies the TF-gene interaction data.  In other words, it specifies the TF targets. 
- Under the tf_dna directory, we provided a human TF-gene interaction file inferred using the strategy in our previous study (https://www.ncbi.nlm.nih.gov/pubmed/20219943). 
- Although this TF-gene interaction file is collected in human, it should be also able to apply to other close species such as mouse.   
- Besides, in our previous work DREM (http://sb.cs.cmu.edu/drem/), we did collected the TF-gene interactions for common species including human, mouse, fry, E.coli, yeast, Arabidopsis. 
- Please refer to  http://sb.cs.cmu.edu/drem/DREMmanual.pdf appendix B for complete details. 
- Those TF-gene interaction files can be downloaded from our DREM software (https://github.com/phoenixding/idrem/tree/master/TFInput).
- You might need to unzip and re-format the file to satisfy the requirements. The TF-gene interaction file has the following formatting requirements:  
+This specifies the TF-gene interaction data.  In other words, it specifies the TF targets. 
+Under the tf_dna directory, we provided a human TF-gene interaction file inferred using the strategy in our previous study (https://www.ncbi.nlm.nih.gov/pubmed/20219943). 
+Although this TF-gene interaction file is collected in human, it should be also able to apply to other close species such as mouse.   
+Besides, in our previous work DREM (http://sb.cs.cmu.edu/drem/), we did collected the TF-gene interactions for common species including human, mouse, fry, E.coli, yeast, Arabidopsis. 
+Please refer to  http://sb.cs.cmu.edu/drem/DREMmanual.pdf appendix B for complete details. 
+Those TF-gene interaction files can be downloaded from our DREM software (https://github.com/phoenixding/idrem/tree/master/TFInput).
+You might need to unzip and re-format the file to satisfy the requirements. The TF-gene interaction file has the following formatting requirements:  
  
- * __Header Row__  
- ```
- TF	Gene	Input
- ```
- * __Data Rows__  
-	* __1st column__: TF ID (gene symbol)
-	* __2rd column__: gene ID (gene symbol)
-	* __3rd column__: Input, optional, the interaction strength between TF and target gene. If missing, by default it's 1.  
-	This column is not used in scdiff.  	
-Example file:   
-[example TF gene interaction file](tf_dna/human_predicted_100.txt.update)
+	* __Header Row__  
+	```
+	TF	Gene	Input
+	```
+	* __Data Rows__  
+		* __1st column__: TF ID (gene symbol)
+		* __2rd column__: gene ID (gene symbol)
+		* __3rd column__: Input, optional, the interaction strength between TF and target gene. If missing, by default it's 1.  
+		This column is not used in scdiff. 
+		 	
+	Example file:   
+	[example TF gene interaction file](tf_dna/human_predicted_100.txt.update)
 
 * __-k/--cluster__
   This specifies the clustering parameter (String). 
