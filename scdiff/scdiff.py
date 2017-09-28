@@ -1478,7 +1478,7 @@ def  main():
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
 
-	global SPECTRALIMIT  # the upper bound for spectral clustering, if larger, should use KMeans instead
+	global SPECTRALIMIT  # under largeType model, the upper bound for spectral clustering, if larger, should use KMeans instead
 	SPECTRALIMIT=20
 			
 	#pdb.set_trace()
