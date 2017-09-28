@@ -127,7 +127,7 @@ scdiff takes the two required input files (-i/--input and -t/--tf_dna) and one o
  For example, users can use Tophat + Cufflink to calculate the gene expression in terms of FPKM.  Please refer to corresponding tools for instructions. 
  Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM or TPM depending
  on what tools are used to precoess the RNA-Seq expression data.  
- The input file has the following formatting requirements:  
+ The input file has the following formatting requirements:
  * __Header Row__  
  First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
  * __Data Rows__  
