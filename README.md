@@ -122,22 +122,23 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 scdiff takes the two required input files (-i/--input and -t/--tf_dna) and one option config file (-k/--clusters).
 
 * __-i/--input__  
- This specifies the single cell RNA-Seq expression data.  
- If the RNA-Seq data is not processed, the instruction about how to calculate expression based on RNA-Seq raw reads can be found in many other studies, e.g (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4728800/).
- For example, users can use Tophat + Cufflink to calculate the gene expression in terms of FPKM.  Please refer to corresponding tools for instructions. 
- Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM or TPM depending
- on what tools are used to precoess the RNA-Seq expression data.  
- The input file has the following formatting requirements:
- * __Header Row__  
- First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
- * __Data Rows__  
-	* __1st column__: Cell ID, represents the ID for the cell.
-	* __2nd column__: Cell time, Integer, represents the measurement time of the cell. 
-	* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't any prior knowledge of the cell label. In this case, use "NA" instead.
-	Please note that the cell label is only used for analyzing the result, we did not use this information in scdiff method. 
-	* __4th- columns__: Gene expression values.  
-	Example input:     
-	[example.E](example/example.E)
+This specifies the single cell RNA-Seq expression data.  
+If the RNA-Seq data is not processed, the instruction about how to calculate expression based on RNA-Seq raw reads can be found in many other studies, e.g (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4728800/).
+For example, users can use Tophat + Cufflink to calculate the gene expression in terms of FPKM.  Please refer to corresponding tools for instructions. 
+Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM or TPM depending
+on what tools are used to precoess the RNA-Seq expression data.  
+The input file has the following formatting requirements:
+	* __Header Row__  
+	First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
+	* __Data Rows__  
+		* __1st column__: Cell ID, represents the ID for the cell.
+		* __2nd column__: Cell time, Integer, represents the measurement time of the cell. 
+		* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't any prior knowledge of the cell label. In this case, use "NA" instead.
+		Please note that the cell label is only used for analyzing the result, we did not use this information in scdiff method. 
+		* __4th- columns__: Gene expression values.  
+	
+Example input:     
+[example.E](example/example.E)
 
  
 * __-t/--tf_dna__  
