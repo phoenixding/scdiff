@@ -119,7 +119,7 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 ```
 # INPUTS AND PRE-PROCESSING
 
-scdiff takes the two required input files (-i/--input and -t/--tf_dna) and one option config file (-k/--clusters).
+scdiff takes the two required input files (-i/--input and -t/--tf_dna) and one optional config file (-k/--clusters).
 
 * __-i/--input__  
 This specifies the single cell RNA-Seq expression data.  
