@@ -55,6 +55,11 @@ Linux, Mac:
 $sudo python setup.py install 
 ```
 
+or install via pip:  
+
+```shell
+pip install scdiff
+```
 # USAGE
 
 ```shell
