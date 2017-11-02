@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(  name='scdiff',
-		version='1.1.10',
+		version='1.1.11',
 		description='Single Cell Differentiation Model package',
 		author='Jun Ding',
 		author_email='jund@andrew.cmu.edu',
