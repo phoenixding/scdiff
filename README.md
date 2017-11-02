@@ -162,25 +162,28 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
 	Example file:   
 	[example TF gene interaction file](tf_dna/human_predicted_100.txt.update)
 
-* __-k/--cluster__
-  This specifies the clustering parameter (String). 
-  It's need to be either 'auto' or path to the 'config' file. Here, 'auto' denotes the clustering parameters will be learned automatically.
-  The 'config' file specifies the custom initial clustering parameters. This was used when we have some prior knowledge. For example, if we know there are how many sub-populations within each time, 
-  we can just directly specify the clustering parameters using the  clustering 'config' file.
+* __-k/--cluster__  
+  This specifies the clustering parameter (String).   
+  It's need to be either 'auto' or path to the 'config' file. Here, 'auto' denotes the clustering parameters will be learned automatically.  
+  The path to the 'config' file specifies the file with customized initial clustering parameters. This should be used when users have some prior knowledge.  
+  For example, if we know there are how many sub-populations within each time, 
+  we can just directly specify the clustering parameters (K, # of clusters) using the 'config' file.
   Please note that this config file is optional, users can set -k as "auto" and the scdiff will learn the clustering parameters automatically. 
-  
   Config file format:   
  
   * __1st column__: Time point
-  * __2nd column__: # of clusters(sub cell-types) at this time point.   
- 
-  example:  
+  * __2nd column__: # of clusters(sub cell-types) at this time point.  
   ```
   14  1  
   16  2  
   18  5
-  ```
-  Example file: 
+  ``` 
+  please note if using the customized config file for clustering, the first line (represents the first time point) second column (# of sub cell-types) must be 1.
+  The first line denotes the ancestor time point and all cells at later time points are descendants. However, if the first time point is already differentiated and there
+  are already multiple sub-types, users need to use VirtualAncestor option (-a 1) to generate a virtual ancestor node (virtual root node). In the config file,
+  a virtual ancestor line also needs to be added before the first time point. The virtual ancestor time point should be FirstTimePoint(Integer)-1.  For example,
+  if the first time point is 14, the virtual ancestor time point would be 13. 
+  Example  config file: 
   [example.config](example/example.config)
   
 For the scdiff options, please refer to the [usage](#usage) section. 
