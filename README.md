@@ -182,7 +182,7 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
   The first line denotes the ancestor time point and all cells at later time points are descendants. However, if the first time point is already differentiated and there
   are already multiple sub-types, users need to use VirtualAncestor option (-a 1) to generate a virtual ancestor node (virtual root node). In the config file,
   a virtual ancestor line also needs to be added before the first time point. The virtual ancestor time point should be FirstTimePoint(Integer)-1.  For example,
-  if the first time point is 14, the virtual ancestor time point would be 13. 
+  if the first time point is 14, the virtual ancestor time point would be 13.   
   Example  config file: 
   [example.config](example/example.config)
   
