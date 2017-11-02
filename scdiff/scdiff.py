@@ -108,7 +108,7 @@ class Clustering:
 		# calculat affinity matrix
 		print('calculating affinity matrix ...')
 		dTM={}
-		for T in self.KET[1:]:
+		for T in self.KET:
 			CT = det[T]
 			dTM[T] = calculateAffinity([item.E for item in CT])
 		return dTM
@@ -118,7 +118,7 @@ class Clustering:
 		print('calculating affinity matrix ...')
 		#cells->affinity
 		dTM={}
-		for T in self.KET[1:]:
+		for T in self.KET:
 			CT=det[T]
 			X=np.array([item.E for item in CT])
 			pca=PCA(n_components=10)
@@ -273,34 +273,37 @@ class Clustering:
 		SPECTRALIMIT=100
 		
 		for T in KET[1:]:
-			CT = self.dET[T]
-			CKi = dCK[T]
-			SS=[]
-			if self.largeType=='1' or self.largeType=='True':
-				X=copy.deepcopy(self.affMatrix[T])
-				SEEDS = range(NSEEDS)
-				for s in SEEDS:
-					SC = KMeans(n_clusters=CKi)
-					SC.fit(X)
-					Y = SC.labels_
-					sscore = silhouette_score(X, Y)
-					SS.append(sscore)
-					print("seeds:"+str(s))
-				sbest = SEEDS[SS.index(max(SS))]
-				dBS[T] = sbest
-			else:
-				X=copy.deepcopy(self.affMatrix[T])
-				DX=self.affinity2Distance(X)
-				SEEDS = range(NSEEDS)
-				for s in SEEDS:
-					SC = SpectralClustering(n_clusters=CKi, random_state=s)
-					SC.fit(X)
-					Y = SC.labels_
-					sscore = silhouette_score(DX, Y, metric="precomputed")
-					SS.append(sscore)
-					print("seeds:"+str(s))
-				sbest = SEEDS[SS.index(max(SS))]
-				dBS[T] = sbest
+			try:
+				CT = self.dET[T]
+				CKi = dCK[T]
+				SS=[]
+				if self.largeType=='1' or self.largeType=='True':
+					X=copy.deepcopy(self.affMatrix[T])
+					SEEDS = range(NSEEDS)
+					for s in SEEDS:
+						SC = KMeans(n_clusters=CKi)
+						SC.fit(X)
+						Y = SC.labels_
+						sscore = silhouette_score(X, Y)
+						SS.append(sscore)
+						print("seeds:"+str(s))
+					sbest = SEEDS[SS.index(max(SS))]
+					dBS[T] = sbest
+				else:
+					X=copy.deepcopy(self.affMatrix[T])
+					DX=self.affinity2Distance(X)
+					SEEDS = range(NSEEDS)
+					for s in SEEDS:
+						SC = SpectralClustering(n_clusters=CKi, random_state=s)
+						SC.fit(X)
+						Y = SC.labels_
+						sscore = silhouette_score(DX, Y, metric="precomputed")
+						SS.append(sscore)
+						print("seeds:"+str(s))
+					sbest = SEEDS[SS.index(max(SS))]
+					dBS[T] = sbest
+			except:
+				dBS[T]=0
 		dBS[KET[0]] = 0
 		return dBS
 
@@ -319,7 +322,7 @@ class Clustering:
 			CKT=dCK[ti]
 			BST=dBS[ti]
 			
-			if i > 0:
+			if CKT > 1:
 				if (self.largeType=='1' or self.largeType=='True'):
 					X=copy.deepcopy(self.affMatrix[ti])
 					SC = KMeans(n_clusters=CKT, random_state=BST)
@@ -819,6 +822,7 @@ class Graph:
 			ti=KET.index(i.T)
 			i.ST=i.T
 			i.T=ti
+		#pdb.set_trace()
 			
 	def splitTime(self):
 		# -----------------------------------------
@@ -1004,8 +1008,9 @@ class Graph:
 		for i in self.Nodes:
 			if not i.C:
 				cp =getCompletePath(i)
-				CP.append(cp)
-
+				if cp!=[]:
+					CP.append(cp)
+		#pdb.set_trace()
 		return CP
 
 	def estimateQR(self):
@@ -1099,7 +1104,8 @@ class Graph:
 		Tstart = sum([item.dta for item in self.Nodes[0].cells]) / len(self.Nodes[0].cells)
 		mut0 = [Tstart]
 		smt0 = [0.1]
-
+	
+		#--------------------------------------------------------------------
 		Tstart = sum([item.dta for item in self.Nodes[0].cells]) / len(self.Nodes[0].cells)
 		Tend = sum([item.dta for item in self.Nodes[-1].cells]) / len(self.Nodes[-1].cells)
 		Tstep = (Tstart - Tend) / len(KET)
@@ -1117,7 +1123,8 @@ class Graph:
 			for j in range(len(an)):
 				an[j].mT = mut[j]
 				an[j].rT = [item + pcount for item in smt[j]]
-
+			#pdb.set_trace()
+		
 	def rEstimateT1(self):
 		#todo modify time estimate using Kalman Filter
 		Qt = [1]
@@ -1146,7 +1153,8 @@ class Graph:
 			ivt=KET.index(i.T)
 			i.mT=mut[ivt]
 			i.rT=smt[ivt]
-
+		
+		
 	def getNodePR(self):
 		# -------------------------------------------------------------------------
 		# calculate the probability for each cluster
@@ -1449,7 +1457,7 @@ def getVarianceVector(x,mu=None):
 
 #----------------------------------------------------------------------
 # build the virtual ancestor node
-def buildVirtualAncestor(AllCells):
+def buildVirtualAncestor(AllCells,VT=None):
 	TT=[item.T for item in AllCells]
 	FirstT=sorted(TT)[0]
 	FirstTCells=[item for item in AllCells if item.T==FirstT]
@@ -1460,7 +1468,7 @@ def buildVirtualAncestor(AllCells):
 	for i in range(L):
 		iAvg=sum([item.E[i] for item in FirstTCells])/n
 		AE.append(iAvg)
-	TA=FirstT-1
+	TA=float(VT) if VT!=None else FirstT-1
 	virtual_ancestor=Cell('virtual_ancestor',TA,AE,'NA',GL)
 	return virtual_ancestor
 
@@ -1486,6 +1494,7 @@ def  main():
 	largeType=args.large
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
+	
 		
 	#pdb.set_trace()
 	#-----------------------------------------------------------------------
@@ -1507,10 +1516,27 @@ def  main():
 				AllCells.append(ci)
 			line_ct+=1
 			print('cell:'+str(line_ct))
+			
+	firstTime=min([float(item.T) for item in AllCells])
 	
-	
+	#===================================================================
+	# error processing ...
+	if kc!="auto":
+		kcLines = TabFile(kc).read("\t")
+		firstConfigTime=float(kcLines[0][0])
+		firstConfigCluster=float(kcLines[0][1])
+		
+		if firstConfigCluster>1:
+			print("Error! the first line of the config file must have only 1 cluster. Please add another virtual ancestor time point as the first line if you have multiple clusters at the first time point in your config file. Virtual ancestor option also needs to be enabled (-a 1) ")
+			sys.exit(0)	
+		if (firstConfigTime<firstTime) and (virtualAncestor==None):
+			print("Error! VirtualAncestor option deteced, but VirtualAncestor option (-a) is not enabled. Please enable the Virtual Ancestor option.")
+			sys.exit(0)
+		elif (firstConfigTime==firstTime) and (virtualAncestor!=None):
+			print("Error! Virtual Ancestor option enabled, but no Virtual Ancestor time point information was given in the config file. Please add Virtual Ancestor time point in the config file or disable the opition.")
+			sys.exit(0)
 	#=======================================================================
-	# 2): Clustering starts here!
+	# 3): Clustering starts here!
 	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor)
 
 	#========================================================================
