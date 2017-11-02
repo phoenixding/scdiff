@@ -36,11 +36,6 @@ The python setup.py script will try to install these packages automatically.
 However, please install them manually if, by any reason, the automatic 
 installation fails. 
 
-* If using Graphic User Interface(GUI), please instal the Tkinter package.
-Please check [http://tkinter.unpythonic.net/wiki/How_to_install_Tkinter](http://tkinter.unpythonic.net/wiki/How_to_install_Tkinter)
-to install Tkinter package. 
-
-
 # INSTALLATION
  
 cd to the package root directory 
@@ -133,7 +128,7 @@ The input file has the following formatting requirements:
 	* __Data Rows__  
 		* __1st column__: Cell ID, represents the ID for the cell.
 		* __2nd column__: Cell time, Integer, represents the measurement time of the cell. 
-		* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't any prior knowledge of the cell label. In this case, use "NA" instead.
+		* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't have any prior knowledge of the cell label. In this case, use "NA" instead.
 		Please note that the cell label is only used for analyzing the result, we did not use this information in scdiff method. 
 		* __4th- columns__: Gene expression values.  
 	
@@ -165,8 +160,8 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
 * __-k/--cluster__
   This specifies the clustering parameter (String). 
   It's need to be either 'auto' or path to the 'config' file. Here, 'auto' denotes the clustering parameters will be learned automatically.
-  The 'config' file specifies the custom initial clustering parameters. This was used when we have some prior knowledge. For example, if we know they are how many sub-populations within each time, 
-  we can just directly specify the clustering parameters using the  clustering 'config' file, which provides better performance.
+  The 'config' file specifies the custom initial clustering parameters. This was used when we have some prior knowledge. For example, if we know there are how many sub-populations within each time, 
+  we can just directly specify the clustering parameters using the  clustering 'config' file.
   Please note that this config file is optional, users can set -k as "auto" and the scdiff will learn the clustering parameters automatically. 
   
   Config file format:   
@@ -224,12 +219,13 @@ The slider resizes the visualization.
 	
 # EXAMPLES
  
-Run scdiff on given time-series single cell RNA-seq data 
-
+Run scdiff on given time-series single cell RNA-seq data.  
+An example script [exampleRun.py](example/exampleRun.py) is provided under the example directory.
+  
 **1) Run with automatic config**
 
 ```shell
-$ scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out>
+$ scdiff -i example.E -t example.tf_dna -k auto -o example_out
 ```
 * **-i/--input**:   
 **example.E** is the single cell RNA-seq dataset with following format (tab delimited)
@@ -289,7 +285,7 @@ Here, 'auto' denotes the clustering parameters will be learned automatically.
 **2) Run with user-defined config** 
 
 ```shell
-$scdiff -i <example.E>  -t <example.tf_dna> -k <example.config> -o <example_out>
+$scdiff -i example.E  -t example.tf_dna -k example.config -o example_out
 ```
 
 The format of example.E and example.tf_dna are the same as described above. 
@@ -317,7 +313,7 @@ However, if we don't have any prior knowledge about the sub-populations within e
 
 
 ```shell
-$scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out> -l True -s True
+$scdiff -i example.E -t example.tf_dna -k auto -o example_out -l True -s True
 ```
 
 -i, -t, -k, -o parameters were discussed above. 
@@ -334,8 +330,8 @@ Based on testing on lung single cell dataset (Treutlein 2014), the speedup perfo
 
 **(4) Run scdiff on large single cell dataset with synchronization disabled and virtual ancestor**
 ```shell 
-$scdiff -i <example.E> -t <example.tf_dna> -k auto -o <example_out> -l True -s True -d True -a True
-```
+$scdiff -i example.E -t example.tf_dna -k auto -o example_out -l True -s True -d True -a True
+```  
 -i, -t , -k, -o, -l ,-s parameters were defined above. 
 
 * **-d/--dsync (optional)**  
@@ -354,37 +350,11 @@ The following link present the results for an example running.
 
 # MODULES  & FUNCTIONS
 
-## scdiff module 
-This python module is used to perform the single cell differentiation analysis and it builds a graph (differentiation) based on the analysis result. 
+## scdiff module
+This python module is used to perform the single cell differentiation analysis and it builds a graph (differentiation). Users can use the modules by
+importing scdiff package in their program.  Besides the description below, we also provided a module testing example inside the example directory under the name [moduleTestExample.py](example/moduleTestExample.py). 
 
-
-**[scdiff.Graph(Cells, kc,largeType=None)](#graph) <a id="graph"></a>**  
-This class defines the differentiation graph. 
-
-**Parameters**:  
-
-* **Cells**:  Cell instances   
-Please read [cell](#cell) Class definition for details.   
-* **kc**: String   
-clustering config. It's a string with either 'auto' or clustering configure file path (-k parameter).  
-* **largeType**: None(default) or String     
-whether the single cell is a 'largeType' (largeType denotes the number of cells in datasets is very large  (typically >2k cells). 
-In such case, the performance will be scarified to improve the running efficiency (e.g. using K-means instead of spectral clustering). 
-If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
-
-**Output**:  
-A graph instance with all nodes and edges, which represents the differentiation structure for given inputs. 
-
-**Example**:
-
-```python 
-import scdiff
-from scdiff import *
-graph1=scdiff.Graph(Cells,'auto',None)  #Cells: List of Cell instances 
- 
-```
-
-**[scdiff.Cell(Cell_ID, TimePoint, Expression,typeLabel)](#cell)<a id="cell"></a>**    
+**[scdiff.Cell(Cell_ID, TimePoint, Expression,typeLabel,GeneList)](#cell)<a id="cell"></a>**    
 This class defines the cell. 
 
 **Parameters**:  
@@ -392,24 +362,104 @@ This class defines the cell.
 * **Cell_ID**: String  
 The ID  of the cell.
 * **TimePoint**: Integer  
-Measurement TimePoint of the cel, Integer.  
+Measurement TimePoint of the cell, Integer.  
 * **Expression**: List of float  
 Expression of all genes.
 * **Cell_Label**: String  
 The true label for the cell if available, 'NA' if not available. (Note, we don't need  this information for the  model, but it's  useful when
 analyzing the result).
+* **GeneList** : List of String  
+List of gene symbols expressed in the cell.  
 
 **Output**:  
 A Cell class instance  (with all information regarding to  a cell)
 
+**Attributes**:
+* **ID **: String  
+Cell ID  
+* **T**: Integer  
+Cell Time  
+* **GL**: List of String  
+List of gene names  
+* **E** : List of float
+List of gene expression
+ 
 **Example**:
 
 ```python
 import scdiff
 from scdiff.scdiff import *
-c1=Cell('C1',1,[0.1,4.2,....,3.6],'AT1')
-c2=Cell('C2',1,[0.1,4.2,....,3.6],'AT1')
-AllCells=[c1,c2]
+
+# reading example cells ...
+AllCells=[]
+print("reading cells...")
+with open("example.E","r") as f:
+	line_ct=0
+	for line in f:
+		if line_ct==0:
+			GL=line.strip().split("\t")[3:]
+		else:
+			line=line.strip().split("\t")
+			iid=line[0]
+			ti=float(line[1])
+			li=line[2]
+			ei=[round(float(item),2) for item in line[3:]]
+			ci=scdiff.Cell(iid,ti,ei,li,GL)
+			AllCells.append(ci)
+		line_ct+=1
+		print('cell:'+str(line_ct))
+```
+
+
+**[scdiff.Graph(Cells, tfdna, kc, largeType=None, dsync=None, virtualAncestor=None)](#graph) <a id="graph"></a>**  
+This class defines the differentiation graph. 
+
+**Parameters**:  
+
+* **Cells**:  Cell instances     
+Please read [cell](#cell) Class definition for details.   
+* **tfdna**: String  
+It specifies the path to the TF-gene interaction file. 
+* **kc**: String   
+clustering config. It's a string with either 'auto' or clustering configure file path (-k parameter).  
+* **largeType**: None(default) or String     
+whether the single cell data is a 'largeType' (largeType denotes the number of cells in datasets is very large  (typically >2k cells). 
+In such case, the performance will be scarified to improve the running efficiency (e.g. using K-means instead of spectral clustering). 
+If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
+* **dsync**: None(default) or String ('True' or '1')  
+whether disable the cell time synchronization. By default, the cell time synchronization is enabled. If dsync set as "1" or "True",
+this function will be disabled. No cell time synchronization will be made.  
+
+* **virtualAncestor**: None (default) or String ('True' or '1')   
+By default, all cells at the first time will be regarded as the starting ancestor for all cells at later time points. 
+If users believe that the cells are already differentiated significantly and there are already more than 1 group at the first time point.  
+Then, a virtual ancestor needs to be used by setting virtualAncestor as "True" or "1" . 
+
+**Output**:  
+A graph instance with all nodes and edges, which represents the differentiation structure for given inputs. 
+
+**Attributes**:
+* **Cells**: List of Cell instances  
+
+* **Nodes**: List of Cluster instances (each cluster represents a node), all nodes in the graph. 
+
+* **Edges**: List of Path instances (each represents an edge), all edges in the graph.   
+
+* **dTD,dTG,dMb**:     
+They are all dictionaries about TF-gene interactions.   
+dTD-> key: TF, value: List of target genes  
+dTG-> key: gene, value: List of regulating TFs    
+dMb-> key: TF, value: List of target genes, which are expressing (non-zero) in the given single cell expression dataset.   
+
+**Example**:
+
+```python 
+import scdiff
+from scdiff.scdiff import *
+
+print("testing scdiff.Graph module ...")
+# creating graph using scdiff.Graph module and examples cells build above
+g1=scdiff.Graph(AllCells,"example.tf_dna",'auto')
 ```
 
 **[scdiff.Clustering(Cells, kc,largeType=None)](#graph)**   
@@ -417,14 +467,14 @@ This class represents the clustering.
 
 **Parameters**:
 
-* **Cells**:  List of Cell
+* **Cells**:  List of Cell  
 Please read [Cell](#cell) Class definition for details. 
 * **kc**: String   
 clustering config. It's a string with either 'auto' or clustering configure file path (-k parameter).
 * **largeType**: None(default) or String   
 whether the single cell is a 'largeType' (largeType denotes the number of cells in datasets is very large  (typically >2k cells). 
-In such case, the performance will be scarified to improve the running efficiency (e.g. using K-means instead of spectral clustering). 
-If not set (**None**), the dataset will be regarded as normal, if set as 'True', the dataset will be treated as largeType. 
+In such case, the performance will be scarified to improve the running efficiency (e.g. using PCA + K-means instead of spectral clustering). 
+If not set (**None**), the dataset will be regarded as normal, if set as 'True' or '1', the dataset will be treated as largeType. 
 
 **Method**: **[getClusteringPars()](#clustering_getClusteringPars)**  
  
@@ -444,7 +494,7 @@ clustering seed for each time point
 ```python
 import scdiff
 from scdiff import *
-Clustering_example=scdiff.Clustering(Cells,'auto',None)
+Clustering_example=scdiff.Clustering(AllCells,'auto',None)
 [dCK,dBS]=Clustering_example.getClusteringPars()
 ```
 **Method**: **[performClustering()](#clustering_performClustering)**  
@@ -457,17 +507,17 @@ for details. This function is used to cluster all the nodes into clusters(Graph 
 ```python
 import scdiff 
 from scdiff import *
-Clustering_example=scdiff.Clustering(Cells,'auto',None)
+Clustering_example=scdiff.Clustering(AllCells,'auto',None)
 Clusters=Clustering_example.performClustering()
 
 ```
 
-**[scdiff.Cluster((Cells,TimePoint,Cluster_ID))](#cluster)<a id="cluster"></a>**  
+**[scdiff.Cluster(Cells,TimePoint,Cluster_ID)](#cluster)<a id="cluster"></a>**  
 This class defines the node in the differentiation graph. 
 
 **Parameters**:  
 
-* **Cells**: List of Cell
+* **Cells**: List of Cell  
 [Cell](#cell) instances.   
 * **TimePoint**: Integer  
 Initial Time Point for Cluster, it's the dominant measurement time for 
@@ -475,21 +525,29 @@ all cells within the cluster.
 * **Cluster_ID**: String   
 Cluster ID.  
 
-**Method**: **[getAvgEx()](#clusters_getAvgEx)**:
-
-* **Output**:  List of float, this function calculates the average 
+**Output**:  List of float, this function calculates the average 
 gene expression of all cells in cluster. 
-* **Example**:
+
+**Attributes**: 
+
+* **cells**: List of Cell instances  
+* **T**: Cluster time (Integer/float)   
+* **ID**: Cluster ID (String)  
+* **P**: Parent Cluster (Cluster instance)
+* **C**: Children Clusters (List of Cluster instances)
+* **E**: Mean gene expression of the Cluster  (List of float)  
+* **R**: Gene expression variance of the Cluster (List of float)
+* **GL**: List of gene names (List of String  )
+
+**Example**:
 
 ```python
 import scdiff 
 from scdiff import *
-cluster1=scdiff.Cluster(Cells,14,'C1')
-AvgEx=cluster1.getAvgEx()
-
+cluster1=scdiff.Cluster([item for item in AllCells if item.T==14],14,'C1')
 ```
 
-**[scdiff.Path(fromNode,toNode,Nodes)](#path)**
+**[scdiff.Path(fromNode,toNode,Nodes,dTD,dTG,dMb)](#path)**
 
 This class defines the edge in the differentiation graph. 
 
@@ -504,36 +562,32 @@ The ending end of an edge, Cluster instance
 * **Nodes**: List of Cluster  
 All Nodes in Graph. 
 
+* **dTD,dTG,dMb**:
+The same as described in the scdiff.Graph class.  
 
-**Method**: **[getFC()]()**:
+**Output**:
+Graph edge instance. 
 
-* **Output**: Get the log fold change (2D List): [[foldchange,geneIndex,fromEx,toEx],...] along the edge(Path), from fromNode to toNode. 
-
-**Method**: **[getetf()]()**:
-
-* **Output**: Get the potential regulating TFs **[etf,dtf]** for given edge (fromNode->toNode).
-* **etf**: 2D List: [[p-value,TF_name],...], which represents the regulating TFs and p-values for each edge
-* **dtf**: 2D List: [[p-value,TF_name],...], sub-list of etf, which represents the regulating TFs (and p-value) with different expression for
-different differentiation paths. 
-
-* **example**:
+**Attributes**: 
+* **fromNode**: Cluster instance (source node of the edge).
+* **toNode**: Cluster instance (target node of the edge). 
+* **diffG**: differentially expressed genes on the edge. 
+* **atf**: regulating TFs on the edge. 
+                               
+**Example**:
 
 ```python
 import scdiff 
 from scdiff import *
-C1=scdiff.Cluster(Cells_1,14,'C1')
-C2=scdiff.Cluster(Cells_2,16,'C2')
-AC=[C1,C2,...,Cn]
-p1=scdiff.Path(C1,C2,AC)
-fc=p1.getFC()
-[etf,dtf]=p1.getetf()
-
+g1=scdiff.Graph(AllCells,"example.tf_dna",'auto')
+p1=scdiff.Path(g1.Nodes[0],g1.Nodes[1],g1.Nodes,g1.dTD,g1.dTG,g1.dMb)
 ```
+
 
 ##  viz module 
 This module is designed to visualize the differentiation graph structure using JavaScript.   
 
-**[viz.viz(exName,Graph,GeneNames,dTD,output)](#viz)**
+**[scdiff.viz(exName,Graph,output)](#viz)**
 
 **Parameters**:
 
@@ -542,15 +596,7 @@ The name of the output visualization result.
 
 * **Graph**: Graph 
 Graph instance, please refer [Graph](#graph).
-
-* **GeneNames**: List of String 
-
-* **dTD**: Dictionary   
-Key: String, TF name.  
-Value: List of String, Gene name.
-e.g. {'NKX2-1': ['SNX13','RAB30',...]}
-* **output**: String   
-output directory name 
+* **output**: output directory 
 
 **Output**:
 a visualization folder with HTML page, JavaScript Code and Graph Structure in JSON format. 
@@ -559,17 +605,16 @@ a visualization folder with HTML page, JavaScript Code and Graph Structure in JS
 **Example**:
 
 ```python 
-import scdiff 
+import os
+import scdiff
 from scdiff import *
-exName='example'
-output_directory='example_out'
-GeneNames=['SNX13','RAB30',...]
-dTD={'NKX2-1': ['SNX13','RAB30',...]}
-g1=Graph(Cells,'auto',None)
-viz.viz(exName,g1,GeneNames,dTD,output_directory)
+print ("testing scdiff.viz module ...")
+# visualizing graph using scdiff.viz module 
+os.mkdir("e1_out")
+scdiff.viz("example",g1,"e1_out")
 
 ```
-Then, you will find the  visualized result page in HTML under 'example_out' directory.
+Then, you will find the visualized result page in HTML under 'e1_out' directory.
 
 
 
