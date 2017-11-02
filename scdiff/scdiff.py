@@ -51,13 +51,13 @@ import gc
 #-----------------------------------------------------------------------------------------------------------------------
 # cell
 class Cell:
-        def __init__(self, Cell_ID, TimePoint, Expression,typeLabel):
+        def __init__(self, Cell_ID, TimePoint, Expression,typeLabel,GL):
                 self.ID=Cell_ID
                 self.T=TimePoint
                 self.E=Expression
                 self.Label=None # Label for clustering purpose
                 self.typeLabel=typeLabel
-
+                self.GeneList=GL
         def distanceTo(self,Ancestor):
                 dta=spearmanr(self.E, Ancestor.E)[0]
                 return dta
@@ -72,11 +72,10 @@ class Clustering:
 		self.largeType=largeType                          # whether to use the large dataset model for clustering
 		self.kc=kc                                        # clusters
 		
-		
 	# get clustering parameters
 	def getClusteringPars(self):
 		if self.largeType==None:
-			self.affMatrix=self.getAffMatrix(self.dET)		# get affinity matries (map: time->matrix) normal model 
+			self.affMatrix=self.getAffMatrix(self.dET)            # get affinity matries (map: time->matrix) normal model 
 		else:
 			self.affMatrix=self.getAffMatrixLarge(self.dET)
 			
@@ -192,10 +191,9 @@ class Clustering:
 		#-----------------------------------------------------------------
 		# try many iteration, choose the one with most votes
 		
-		Loop=10 if self.largeType==None else 3
+		Loop=50 if self.largeType==None else 5
 		CK=[]
 		L=len(self.cells[0].E)
-		
 		
 		for li in range(Loop):
 			pn = K0
@@ -212,10 +210,7 @@ class Clustering:
 					FT.append(PhamFK(X,[0 for i in range(len(X))],0))
 					for n in K:
 						gc.collect()
-						if len(X)<SPECTRALIMIT:
-							SC=SpectralClustering(n_clusters=n)
-						else:
-							SC = KMeans(n_clusters=n)
+						SC = KMeans(n_clusters=n)
 						SC.fit(X)	
 						Y = SC.labels_
 						sscore=silhouette_score(X,Y,metric="cosine")
@@ -251,16 +246,16 @@ class Clustering:
 				#pdb.set_trace()
 				# of clusters in previous time point
 				pn = bestK(T)
+				"""
 				fk2=FT[1][0]
 				#pdb.set_trace()
 				if (time_counter==0 and pn==2 and fk2>1):
 					pn=1
+				"""
 				CKT.append(pn)
 				time_counter+=1
 			CK.append(CKT)
-			print('%s'%((li+1.0)/Loop*100)+'%')
-
-		#pdb.set_trace()
+			print('%s'%((li+1.0)/Loop*100)+'%')		
 		CK=sorted([[CK.count(item),item] for item in CK],reverse=True)
 		CK=[item[1] for item in CK]
 		CKK=CK[0]
@@ -275,6 +270,7 @@ class Clustering:
 		dBS = {}  # Best seeds
 		KET=self.KET
 		NSEEDS=100 if self.largeType ==None else 1 #100
+		SPECTRALIMIT=100
 		
 		for T in KET[1:]:
 			CT = self.dET[T]
@@ -284,10 +280,7 @@ class Clustering:
 				X=copy.deepcopy(self.affMatrix[T])
 				SEEDS = range(NSEEDS)
 				for s in SEEDS:
-					if len(X)<SPECTRALIMIT:
-						SC=SpectralClustering(n_clusters=CKi)
-					else:
-						SC = KMeans(n_clusters=CKi)
+					SC = KMeans(n_clusters=CKi)
 					SC.fit(X)
 					Y = SC.labels_
 					sscore = silhouette_score(X, Y)
@@ -329,10 +322,7 @@ class Clustering:
 			if i > 0:
 				if (self.largeType=='1' or self.largeType=='True'):
 					X=copy.deepcopy(self.affMatrix[ti])
-					if len(X)<SPECTRALIMIT:
-						SC = SpectralClustering(n_clusters=CKT, random_state=BST)
-					else:
-						SC = KMeans(n_clusters=CKT, random_state=BST)
+					SC = KMeans(n_clusters=CKT, random_state=BST)
 				else:
 					X=copy.deepcopy(self.affMatrix[ti])
 					SC = SpectralClustering(n_clusters=CKT, random_state=BST)
@@ -356,6 +346,7 @@ class Clustering:
 class Cluster:
 	def __init__(self,cells,timepoint,ID):
 		self.cells=cells           # cells (data poitns) for the cluster
+		self.GL=self.cells[0].GeneList # Cell Gene list
 		self.T=timepoint           # time points observed
 		self.ST=None               # temp time, save the old time based on observation
 		self.ID=ID                 # ID
@@ -415,7 +406,7 @@ class Cluster:
 	def getExpressedTF(self,TFList):
 		PTF=[]
 		EXCUT=0.85		# at least 1-EXCUT non-zero => expressed
-		HGL=[item.upper() for item in GL]
+		HGL=[item.upper() for item in self.GL]
 		for i in TFList:
 			if i in HGL:
 				ix=HGL.index(i)
@@ -465,7 +456,7 @@ class Cluster:
 			if i.T==PT:
 				PL.append(i)
 		DTF={}
-		HGL=[item.upper() for item in GL]
+		HGL=[item.upper() for item in self.GL]
 
 		for i in tfs:
 			if i in HGL:
@@ -507,7 +498,7 @@ class Cluster:
 		mut=self.mT[0]
 		smt=self.rT[0]
 		P=((-0.5) *math.log(2*math.pi*smt)) - ((cell.dta - mut) ** 2 / (2 * smt))
-		P=P*len(GL)
+		P=P*len(self.GL)
 		return P
 
 	# ------------------------------------------------------------------------
@@ -518,7 +509,7 @@ class Cluster:
 		BrotherCluster = [self] if self.P == None else self.P.C
 		CT = reduce(lambda x, y: x + y, [item.cells for item in BrotherCluster])
 		pscount=1
-		for i in range(len(GL)):
+		for i in range(len(self.GL)):
 			ei = [item.E[i] for item in CT]
 			ei_nonzero = [item for item in ei if item != 0]
 			wi = float(len(ei_nonzero)+pscount) / (len(ei)+pscount)
@@ -549,21 +540,22 @@ class Cluster:
 		#-------------------------------------------------------------------
 
 class Path:
-        def __init__(self,fromNode,toNode,Nodes):
+        def __init__(self,fromNode,toNode,Nodes,dTD,dTG,dMb):
                 self.fromNode=fromNode                                                  # from Node
                 self.toNode=toNode                                                      # to Node
                 self.AllNodes=Nodes
-
+                self.GL=fromNode.GL
+			
                 self.diffF=[item[0] for item in self.getDiffGene()]                     # get differnetial genes based on fold change
                 self.diffT=[item[0] for item in self.getDiffGeneTTest()]                # get differential genes based on t-test
                 self.diffG=[item for item in self.diffF if item in self.diffT]          # get differnetial genes based on fold change and student t-test
                 self.FC=self.getFC()                                                    # fold change
 
-                [self.etf,self.dtf]=self.getetf()                                       # transcription factors and diff TFs
-                self.atf=self.getActiveTF()                                             # TF targets are significantly different between fromNode and toNode
+                [self.etf,self.dtf]=self.getetf(dTD,dTG,dMb)                                       # transcription factors and diff TFs
+                self.atf=self.getActiveTF(dTD,dTG,dMb)                                             # TF targets are significantly different between fromNode and toNode
 
-		        #pdb.set_trace()
-                self.B=self.getTransition(U=2,D=-2)                                     # transition offset
+		#---------------------------------------------------------------------- 
+                self.B=self.getTransition(2,-2,dTD,dTG,dMb)                             # transition offset
                 self.Q=self.getProcessVariance(MU=self.fromNode.E)                      # initial process variance
 
                 self.fulltext = '' # for drawing purpose
@@ -583,7 +575,7 @@ class Path:
                 FC=[[abs(logfc(AE[i],BE[i])),logfc(AE[i],BE[i]),i,AE[i],BE[i]] for i in range(len(AE))]
 
                 FC.sort(reverse=True)
-                FC=[[GL[item[2]],item[1],item[3],item[4]] for item in FC]
+                FC=[[self.GL[item[2]],item[1],item[3],item[4]] for item in FC]
                 return FC
 
         # get differential genes between clusters along the path
@@ -610,26 +602,26 @@ class Path:
                         TT.append([pxy,i])
                 TT.sort()
                 TT=[item for item in TT if item[0]<cut]
-                DG=[[GL[item[1]],item[0]] for item in TT if GL[item[1]]]
+                DG=[[self.GL[item[1]],item[0]] for item in TT if self.GL[item[1]]]
                 return DG
 
         #-------------------------------------------------------------------
-        def getetf(self):
-				# get enriched TFs based on significantly diff genes
-				#---------------------------------------------------------------
-				# dMi: input sequence scanning result
-				# dMb: background sequence scanning result
-				# n: number of sequences in input
-				# dTD: dictionary TF->DNA
-				# dMb: TF binding for background
-				# review erniched TF
+        def getetf(self,dTD,dTG,dMb):
+		# get enriched TFs based on significantly diff genes
+		#---------------------------------------------------------------
+		# dMi: input sequence scanning result
+		# dMb: background sequence scanning result
+		# n: number of sequences in input
+		# dTD: dictionary TF->DNA
+		# dMb: TF binding for background
+		# review erniched TF
                 def getEnrichTF():
                         pcut=0.1
                         dMi=batchScanPrior([item.upper() for item in self.diffG],dTD)
                         K=[item for item in dMi.keys() if item in dMb.keys()]
                         K.sort()
                         n=len(self.diffG)		# number of diff genes
-                        N=len(GL)				# N: number of sequences in background (all)
+                        N=len(self.GL)				# N: number of sequences in background (all)
                         entf=[]
                         for i in K:
                                 Ti=len(dMi[i])
@@ -643,7 +635,7 @@ class Path:
                                 K = [item for item in dMi.keys() if item in dMb.keys()]
                                 K.sort()
                                 n = len(self.diffG)		# number of diff genes
-                                N = len(GL)				# N: number of sequences in background (all)
+                                N = len(self.GL)				# N: number of sequences in background (all)
                                 entf = []
                                 for i in K:
                                         Ti = len(dMi[i])
@@ -662,9 +654,9 @@ class Path:
                 return [etf,dtf]
 
         #-------------------------------------------------------------------
-        def getActiveTF(self):
+        def getActiveTF(self,dTD,dTG,dMb):
                 # the idea : the targets for given TFs are signiciantly differenent between the fromNode and toNode
-                HGL=[item.upper() for item in GL]
+                HGL=[item.upper() for item in self.GL]
                 pv_cut=1e-1
                 ATF=[]
 
@@ -690,15 +682,15 @@ class Path:
 
         #-------------------------------------------------------------------
         # regresion model for each path
-        def getTransition(self,U,D):
+        def getTransition(self,U,D,dTD,dTG,dMb):
                 G = self.getFC()
                 dFC = {item[0].upper(): item[1] for item in G}
                 FCUT = 1.5
                 etfID = [item[1] for item in self.etf]
-                [X, Y] = buildTrain(G, dTG, etfID)
+                [X, Y] = buildTrain(G, dTG, etfID,self.GL)
                 LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
                 dR = {0: U, 1: D, 2: 0}
-                HGL = [item.upper() for item in GL]
+                HGL = [item.upper() for item in self.GL]
                 try:
                         LR.fit(X, Y)
                         CE = LR.coef_
@@ -726,7 +718,7 @@ class Path:
                 # X2:  all observations at time point t
                 X1=[item.E for item in self.fromNode.cells]
                 X2=[item.E for item in self.toNode.cells]
-                dim=len(GL)
+                dim=len(self.GL)
                 Q=[]
                 if MU==None:
                         for i in range(dim):
@@ -747,13 +739,23 @@ class Path:
                 return Q
 
 class Graph:
-	def __init__(self,Cells,kc,largeType=None,dsync=None,virtualAncestor=None):
+	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None):
 		self.Cells=Cells
 		self.largeType=largeType
 		self.dsync=dsync
 		self.virtualAncestor=virtualAncestor
+		
+		#Current mode requires an ancestor node (only 1 cluster). If this is not case, virtual ancestor node is needed (The mean expression of the first time point)
+		if (virtualAncestor=='True' or virtualAncestor=='1'):
+			va=buildVirtualAncestor(self.Cells)
+			self.Cells.insert(0,va)
+	
 		self.clustering=Clustering(self.Cells,kc,largeType)#
-		self.Nodes=self.buildNodes()					# build nodees based on cells
+		self.Nodes=self.buildNodes()							# build nodees based on cells
+		self.GL=self.Nodes[0].GL 
+		
+		#----------------------------------------------------------------------------------------------
+		[self.dTD,self.dTG,self.dMb]=self.parseTFDNA(tfdna)							# Gene List									
 		self.updateTime()
 		print("building graph...")
 		if (self.dsync==None):
@@ -772,13 +774,21 @@ class Graph:
 		self.rEstimateEx()		# estimate the expression for nodes (clusters) using Kalman Filter
 		self.rEstimateT()		# estimate time for each node (clustering) using Kalman Filter
         #----------------------------------------------------------------------------------
-
+	
+	def parseTFDNA(self,tfdna):
+		
+		TD=TabFile(tfdna).read('\t') # dictionary to store the TF-DNA info
+		[dTD,dTG]=getTFDNAInteraction(TD)
+		# TF binding in all input sequences (background)
+		dMb=batchScanPrior([item.upper() for item in self.GL],dTD)
+		return [dTD,dTG,dMb]
+		
 	# calculate the weight w for each gene
 	def getW(self):
 		# T: time point
 		pscount=1
 		W=[]
-		for i in range(len(GL)):
+		for i in range(len(self.GL)):
 			ei = [item.E[i] for item in self.Cells]
 			ei_nonzero = [item for item in ei if item != 0]
 			wi = float(len(ei_nonzero)+pscount) / (len(ei)+pscount)
@@ -977,7 +987,7 @@ class Graph:
 		P = []
 		for i in self.Nodes:
 			if i.P:
-				p1 = Path(i.P, i,self.Nodes)
+				p1 = Path(i.P, i,self.Nodes,self.dTD,self.dTG,self.dMb)
 				P.append(p1)
 		return P
 
@@ -1016,8 +1026,8 @@ class Graph:
 			Qi = i.Q
 			Q.append(Qi)
 
-		Q = [sum([item[i] for item in Q]) / len(Q) for i in range(len(GL))]
-		R = [sum([item[i] for item in R]) / len(R) for i in range(len(GL))]
+		Q = [sum([item[i] for item in Q]) / len(Q) for i in range(len(self.GL))]
+		R = [sum([item[i] for item in R]) / len(R) for i in range(len(self.GL))]
 		return Q, R
 
 
@@ -1058,12 +1068,12 @@ class Graph:
 				an.append(j.toNode)
 			X = [[item.E for item in j.cells] for j in an]
 			# -----------------------------------------------
-			B = [0] * len(GL)
+			B = [0] * len(self.GL)
 			B = [B] + [item.B for item in cp]
 
-			A = [[1] * len(GL)] * len(X)
-			H = [[1] * len(GL)] * len(X)
-			I = [[0] * len(GL)] * len(X)
+			A = [[1] * len(self.GL)] * len(X)
+			H = [[1] * len(self.GL)] * len(X)
+			I = [[0] * len(self.GL)] * len(X)
 
 			"""
 			FF=KalmanFilterInd(A,B,H,I,mu0,sm0,Q,R)
@@ -1282,9 +1292,7 @@ def detPeak(K, A, deltaP, type='max'):
 #----------------------------------------------------------------------
 
 def getTFDNAInteraction(TD):
-	global dTD
 	dTD = {}  # TF->DNA
-	global dTG
 	dTG = {}  # DNA->TF
 	for i in TD:
 			if i[0] not in dTD:
@@ -1374,7 +1382,7 @@ def batchScanPrior(A,dTD):
 
 #-----------------------------------------------------------------------
 # building traning dataset for regression
-def buildTrain(G,dTG,etf):
+def buildTrain(G,dTG,etf,GL):
 	# G: differential genes for a given path
 	# dTD: DNA->TF dictionary
 	# TF candidate
@@ -1445,6 +1453,7 @@ def buildVirtualAncestor(AllCells):
 	TT=[item.T for item in AllCells]
 	FirstT=sorted(TT)[0]
 	FirstTCells=[item for item in AllCells if item.T==FirstT]
+	GL=AllCells[0].GeneList
 	L=len(FirstTCells[0].E)         # dim of cell expression
 	n=len(FirstTCells)              # number of cells for current cluster
 	AE=[]
@@ -1452,7 +1461,7 @@ def buildVirtualAncestor(AllCells):
 		iAvg=sum([item.E[i] for item in FirstTCells])/n
 		AE.append(iAvg)
 	TA=FirstT-1
-	virtual_ancestor=Cell('virtual_ancestor',TA,AE,'NA')
+	virtual_ancestor=Cell('virtual_ancestor',TA,AE,'NA',GL)
 	return virtual_ancestor
 
 #----------------------------------------------------------------------
@@ -1477,15 +1486,10 @@ def  main():
 	largeType=args.large
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
-
-	global SPECTRALIMIT  # under largeType model, the upper bound for spectral clustering, if larger, should use KMeans instead
-	SPECTRALIMIT=20
-			
+		
 	#pdb.set_trace()
 	#-----------------------------------------------------------------------
 	# 1) : read in gene expression
-
-	global GL # Gene list global variable
 	AllCells=[]
 	print("reading cells...")
 	with open(scg,'r') as f:
@@ -1499,31 +1503,15 @@ def  main():
 				ti=float(line[1])
 				li=line[2]
 				ei=[round(float(item),2) for item in line[3:]]
-				ci=Cell(iid,ti,ei,li)
+				ci=Cell(iid,ti,ei,li,GL)
 				AllCells.append(ci)
 			line_ct+=1
 			print('cell:'+str(line_ct))
 	
-	#Current mode requires an ancestor node (only 1 cluster). If this is not case, virtual ancestor node is needed (The mean expression of the first time point)
-	if (virtualAncestor=='True' or virtualAncestor=='1'):
-		va=buildVirtualAncestor(AllCells)
-		AllCells.insert(0,va)
 	
-	
-	#-----------------------------------------------------------------------
-	# 2): read in TF-DNA
-	TD=TabFile(tfdna).read('\t') # dictionary to store the TF-DNA info
-	[dTD,dTG]=getTFDNAInteraction(TD)
-
-	#-----------------------------------------------------------------------
-	# TF binding in all input sequences (background)
-	global dMb
-	dMb=batchScanPrior([item.upper() for item in GL],dTD)
-
 	#=======================================================================
-	# Clustering starts here!
-	G1=Graph(AllCells,kc,largeType,dsync,virtualAncestor)
-
+	# 2): Clustering starts here!
+	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor)
 
 	#========================================================================
 	#drawing graphs
@@ -1531,7 +1519,7 @@ def  main():
 		os.mkdir(output)
 
 	scg_name=scg.split('/')[-1]
-	viz(scg_name,G1,GL,dTD,output)
+	viz(scg_name,G1,output)
 	
 	if (args.speedup=='1') or (args.speedup=='True'):
 		print("done!")
@@ -1552,7 +1540,7 @@ def  main():
 		ACL_update=[sorted([item.ID for item in K.cells]) for K in G1.Nodes]
 		condition = ((ACL != ACL_update) and (lct < maxLoop))
 		lct+=1
-		viz(scg_name,G1,GL,dTD,output)
+		viz(scg_name,G1,output)
 	print("done!")
 	#======================================================================#
 

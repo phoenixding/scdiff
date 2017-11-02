@@ -50,7 +50,9 @@ def getAvgEx(A):
 
 #-----------------------------------------------------------------------
 # css template 
-def viz(scg_name,G1,GL,dTD,output):
+def viz(scg_name,G1,output):
+	GL=G1.GL
+	dTD=G1.dTD
 	
 	css_template="""
 	body{
