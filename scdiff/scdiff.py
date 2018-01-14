@@ -174,12 +174,15 @@ class Clustering:
 				ATP=[AT[K.index(item)] for item in SortKey]
 				bk=AT.index(min(ATP))
 			else:
-				MTC=[MT[item] for item in range(len(K)) if K[item]>=pn]
-				minMTC=min(MTC)
-				ATC=[AT[item] for item in range(len(K)) if K[item]>=pn]
-				minATC=min(ATC)
-				SK=[MT.index(minMTC), AT.index(minATC)]
-				bk=max(SK)
+				try:
+					MTC=[MT[item] for item in range(len(K)) if K[item]>=pn]
+					minMTC=min(MTC)
+					ATC=[AT[item] for item in range(len(K)) if K[item]>=pn]
+					minATC=min(ATC)
+					SK=[MT.index(minMTC), AT.index(minATC)]
+					bk=max(SK)
+				except:
+					return 1
 			return K[bk]
 		#----------------------------------------------------------------
 		KET=self.KET
@@ -200,6 +203,7 @@ class Clustering:
 			CKT=[]
 			time_counter=0
 			for T in KET[1:]:
+				K = range(2, 10) if self.largeType==None else range(2,7)
 				CT=self.dET[T]
 				ST = []		# silhouette score
 				MT=[]		# DBI score
@@ -207,6 +211,7 @@ class Clustering:
 				FT=[]		# Pham Score
 				if self.largeType=='1' or self.largeType=='True':
 					X=copy.deepcopy(self.affMatrix[T])
+					K=[item for item in K if item<len(X)]
 					FT.append(PhamFK(X,[0 for i in range(len(X))],0))
 					for n in K:
 						gc.collect()
@@ -226,11 +231,14 @@ class Clustering:
 
 				else:
 					X=copy.deepcopy(self.affMatrix[T])
+					K=[item for item in K if item<len(X)]
 					DX=self.affinity2Distance(X)
 					FT.append(PhamFK(X,[0 for i in range(len(X))],0))
 					for n in K:
 						gc.collect()
 						SC = SpectralClustering(n_clusters=n)
+						if len(X)<=n:
+							break
 						SC.fit(X)
 						Y = SC.labels_
 						sscore = silhouette_score(DX, Y, metric="precomputed")
@@ -262,6 +270,7 @@ class Clustering:
 		for i in range(len(KET[1:])):
 			T=KET[1:][i]
 			dCK[T]=CKK[i]
+		#pdb.set_trace()
 		return dCK
 
 	def determineSeed(self,dCK):

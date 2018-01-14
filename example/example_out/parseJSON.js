@@ -304,9 +304,10 @@
 		var tpathIndex=tpathList.map(function(d){return paths.indexOf(d[0]);});
 		var ttextpath=tpathIndex.map(function(d){return textpaths[d];});
 		for (i in ttextpath){
-			var dei=deList[i];
+			//var dei=deList[i];
+			var dei=tpathList[i][1];
 			var tpath=ttextpath[i];
-			d3.select(tpath).text("DE gene top "+(dei.toFixed(2)*100)+"%")
+			d3.select(tpath).text("DE gene top "+((dei*100).toFixed(1))+"%")
 			.attr("fill","#fff");
 		}
 		if (GL.indexOf(deinput)!=-1){		
@@ -399,7 +400,7 @@
 			  return "translate(" + d.x + "," + d.y + ")"; })
 
 		nodeEnter.append("circle")
-		  .attr("r", 20)
+		  .attr("r", 16)
 		  .attr("fill","#fff")
 		  .attr("stroke","steelblue")
 		  .attr("stroke-width","3px")
@@ -767,6 +768,13 @@
 				.text(function(d){
 					return "ID: E"+d.T+"_"+d.ID;
 					})
+			// add diff stage
+			d3.select(this).append("tspan")
+				.attr("x",20)
+				.attr("dy","1em")
+				.text(function(d){
+					return "Differentiation: "+(d.D*100).toFixed(1)+"%";
+				})
 				
 			for ( var key in ctdict){
 				d3.select(this).append("tspan")
@@ -800,9 +808,33 @@
 		.attr("class","div_table_edge");
 		
 		
+		cnode=this.__data__;
+		// cell details at selected node 
+		var CellIDs=[["ID","Label"]];
+		for (var icell of cnode.CELL){
+			var cid=cells[icell].ID;
+			var clabel=cells[icell].typeLabel;
+			CellIDs.push([cid,clabel]);
+		}
+		
+		tdiv
+		.append("p")
+		.text("Table 0. Cells at selected node: "+cnode.T+"_"+cnode.ID);
+		
+		
+		createTable(tdiv,"celltable",CellIDs);
+		tdiv.append("button")
+		.text("click to create the excel table")
+		.on("click",function(){
+				table2XLS(newW,"celltable","celldlink");
+			});
+			
+		tdiv.append("a")
+		.attr("href","#")
+		.attr("id","celldlink");
+		
 		
 		//TF details for edge ending at selected node
-		cnode=this.__data__;
 		pnode=cnode.parent;
 		var chosenEdge;
 		for (var edge of edges){
@@ -818,7 +850,7 @@
 		
 		tdiv
 		.append("p")
-		.text("Table 1. TF details for the edge ending at selected node:");
+		.text("Table 1. TF details for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		
 		createTable(tdiv,"tftable",resList);
@@ -857,7 +889,7 @@
 		AllTFList.sort(function(a,b){return a[1]-b[1];});
 		tdiv
 		.append("p")
-		.text("Table 2. TFs along the path ending at selected node:");
+		.text("Table 2. TFs along the path ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		createTable(tdiv,"alltftable",AllTFList);
 		
@@ -880,7 +912,7 @@
 
 		var resDEList=exportDEEdge(resDEList,chosenEdge);
 		tdiv.append("p")
-		.text("Table 3. DE gene details for selected edge:")
+		.text("Table 3. DE gene details for edge ending at selected node:"+cnode.T+"_"+cnode.ID)
 		
 		createTable(tdiv,"detable",resDEList);
 		tdiv.append("button")
