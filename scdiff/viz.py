@@ -17,10 +17,15 @@ def GtoJson(G1,GL,dTD):
 	MTL=[item.mT[0] for item in G1.Nodes]
 	MIN_MTL=min(MTL)
     
+	DTL=[sum(item.DTA)/len(item.DTA) for item in G1.Nodes]
+	MIN_DTL=min(DTL)
+    
 	for j in G1.Nodes:
 		ij=[G1.Cells.index(item) for item in j.cells]
 		try:
-			DT=abs(G1.Nodes[0].mT[0]-j.mT[0])/(G1.Nodes[0].mT[0]-MIN_MTL)
+			#pdb.set_trace()
+			#DT=max(0,(G1.Nodes[0].mT[0]-j.mT[0])/(G1.Nodes[0].mT[0]-MIN_MTL))
+			DT=max(0,(DTL[0]-sum(j.DTA)/len(j.DTA))/(DTL[0]-MIN_DTL))
 		except:
 			DT='NA'
 		jcj={'ID':j.ID,'T':j.T,'E':j.E,'D':DT,'CELL':ij,"parent": "null" if j.P==None else G1.Nodes.index(j.P),"children": "null" if j.C==[] else [G1.Nodes.index(item) for item in j.C]}
@@ -51,6 +56,9 @@ def getAvgEx(A):
 #-----------------------------------------------------------------------
 # css template 
 def viz(scg_name,G1,output):
+	if os.path.exists(output)==False:
+		os.mkdir(output)
+		
 	GL=G1.GL
 	dTD=G1.dTD
 	
@@ -681,9 +689,9 @@ def viz(scg_name,G1,output):
 
 	// plot the SVG figure
 	function drawTree(root){
-		var margin = {top: 50, right: 20, bottom: 50, left: 20},
-		width = 1000 - margin.right - margin.left,
-		height =1200 - margin.top - margin.bottom;
+		var margin = {top: 100, right: 20, bottom: 100, left: 20},
+		width = 1200 - margin.right - margin.left,
+		height =1400 - margin.top - margin.bottom;
 		var i = 0;
 		var tree = d3.layout.tree();
 		tree.size([width,height]);
@@ -706,7 +714,7 @@ def viz(scg_name,G1,output):
 			.attr("height", height + margin.top + margin.bottom)
 			.attr("id","svg")
 			.style("background",bgcolor)
-			.attr("viewBox","0 0 1000 1200")
+			.attr("viewBox","0 0 1200 1400")
 			.attr("preserveAspectRatio", "none")
 			.append("g")
 			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");

@@ -13,6 +13,7 @@ function:compute the cumulative probability densiuty function of the binomial di
 
 """
 import math,pdb,sys,os
+from scipy.stats import binom_test
 
 def logc(a,b):
 	s=0
@@ -65,6 +66,23 @@ def normal_estimate(s, p, n):
 #======================================================================
  
 def pbinom(x,n,p):
+	
+	# handling special cases
+	if x<0:
+		return 0
+	if n<=0:
+		return 0
+	if x>n:
+		return 1
+		
+	# use scipy.binom_test to calculate binomial test p-value
+	pv=binom_test(x,n,p,alternative="less")
+	if (1-pv)<=sys.float_info.epsilon/2:
+		return 1
+	else:
+		return pv
+ 
+def pbinom1(x,n,p):
 	# this is approximation
 	# if n is larger (<2000), approximation 1
 	if n<2000:

@@ -58,7 +58,7 @@ $sudo python setup.py install
 or install via pip:  
 
 ```shell
-$pip install scdiff
+$sudo pip install --upgrade https://github.com/phoenixding/scdiff/zipball/master
 ```
 # USAGE
 

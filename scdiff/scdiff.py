@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # author: Jun Ding
-# Date: Sep.  14th, 2016
+# Date: Feb.  10th, 2018
 # import system modules
 import pdb,sys,os,random
 import numpy as np
@@ -189,8 +189,8 @@ class Clustering:
 		dCK = {}
 		dCK[KET[0]] = K0
 		K = range(2, 10) if self.largeType==None else range(2,7)
-
 		print("learning K...")
+		
 		#-----------------------------------------------------------------
 		# try many iteration, choose the one with most votes
 		
@@ -510,7 +510,7 @@ class Cluster:
 		mut=self.mT[0]
 		smt=self.rT[0]
 		P=((-0.5) *math.log(2*math.pi*smt)) - ((cell.dta - mut) ** 2 / (2 * smt))
-		P=P*len(self.GL)
+		#P=P*len(self.GL)
 		return P
 
 	# ------------------------------------------------------------------------
@@ -558,9 +558,11 @@ class Path:
                 self.AllNodes=Nodes
                 self.GL=fromNode.GL
 			
-                self.diffF=[item[0] for item in self.getDiffGene()]                     # get differnetial genes based on fold change
+                self.diffF=[item[0] for item in self.getDiffGene(FCUT=1.5)]                     # get differnetial genes based on fold change (log2 fold change 1.5)
+                self.diffF_loose=[item[0] for item in self.getDiffGene(FCUT=0.6)]               # get differential genes based on fold change (used loose cutof, log2 fold change >0.6, about 1.5)
                 self.diffT=[item[0] for item in self.getDiffGeneTTest()]                # get differential genes based on t-test
                 self.diffG=[item for item in self.diffF if item in self.diffT]          # get differnetial genes based on fold change and student t-test
+                self.diffG_loose=[item for item in self.diffF_loose if item in self.diffT]
                 self.FC=self.getFC()                                                    # fold change
 
                 [self.etf,self.dtf]=self.getetf(dTD,dTG,dMb)                                       # transcription factors and diff TFs
@@ -591,8 +593,8 @@ class Path:
                 return FC
 
         # get differential genes between clusters along the path
-        def getDiffGene(self):
-                FCUT=1.5
+        def getDiffGene(self,FCUT):
+                #FCUT=1.5
                 FC=self.getFC()
                 DG=[item for item in FC if abs(item[1])>FCUT]
                 return DG
@@ -642,11 +644,13 @@ class Path:
                                 pvi=1-pbinom(Ti-1,n,pr)
                                 if pvi<pcut:
                                         entf.append([pvi,i])
+                        
+                        # if fold change cutoff is too stringent, try the loose one (log2FC=0.6, FC=1.5) instead. 
                         if len(entf)<5:
-                                dMi = batchScanPrior([item.upper() for item in self.diffT], dTD)
+                                dMi = batchScanPrior([item.upper() for item in self.diffG_loose], dTD)
                                 K = [item for item in dMi.keys() if item in dMb.keys()]
                                 K.sort()
-                                n = len(self.diffG)		# number of diff genes
+                                n = len(self.diffG_loose)		         # number of diff genes
                                 N = len(self.GL)				# N: number of sequences in background (all)
                                 entf = []
                                 for i in K:
@@ -656,6 +660,7 @@ class Path:
                                         pvi = 1 - pbinom(Ti - 1, n, pr)
                                         if pvi < pcut:
                                                 entf.append([pvi, i])
+			#pdb.set_trace()                     
                         entf.sort()
                         return entf
                 #-------------------------------------------------------------
@@ -942,7 +947,7 @@ class Graph:
 	
 		PL=[item for item in self.Nodes if (item.T==TP and item.ST<=A.ST)]
 		PL=sorted(PL,key=lambda item:sum([getDistance(item,ck) for ck in A.cells])/len(A.cells))
-			
+		#pdb.set_trace()
 		#---------------------------------------------------------------
 		# if time sync is disabled, output the closest node in parent level
 		
@@ -1183,7 +1188,8 @@ class Graph:
 		# re-assign
 		AS = []
 		Tlli = 0
-		K=0.05 #  mixture probability constant.
+		#K=0.05 #  mixture probability constant.
+		K=0.01 #  mixture probability constant.
 		for i in self.Cells:
 			pi=[j.getAssignProbability(i,self.W,K) for j in self.Nodes]
 			Tlli += max(pi)
@@ -1490,10 +1496,14 @@ def  main():
 	parser.add_argument('-t','--tf_dna',required=True,help='TF-DNA interactions used in the analysis')
 	parser.add_argument('-k','--clusters',required=True,default='auto', help='how to learn the number of clusters for each time point? user-defined or auto?  if user-defined, please specify the configuration file')
 	parser.add_argument('-o','--output',required=True, help='output folder to store all results')
-	parser.add_argument('-l','--large',required=False, help="use random sampling strategy for initial clustering of large dataset (e.g. more than 2k cells for each time point)")
-	parser.add_argument('-s','--speedup',required=False, help='use speedup version with less stringent convergence criteria')
-	parser.add_argument('-d','--dsync',required=False,help='disable the cell synchronization (set as True or 1)')
-	parser.add_argument('-a','--virtualAncestor',required=False,help='create a virtual starting node (the ancestor node). All other nodes are the descendants.')
+	parser.add_argument('-l','--large',required=False, help='(1/None), Optional, specify whether the data is largeType, in which case PCA+KMeans will be used for clustering instead of spectral clustering ' + 
+                                                                'to improve the time and space efficiency. It is recommended for large dataset with more than 2k cells.')
+	parser.add_argument('-s','--speedup',required=False, help='(1/None), Optional, if set as 1, scdiff will speedup the running by reducing the iteration times.')
+	parser.add_argument('-d','--dsync',required=False,help='(1/None), Optional, if set as 1, the cell synchronization will be disabled. The cell capture time will be used directly. ' +
+                                                               'This option is recommended when the users believe that the cells captured at the same time are mostly at similar differentiation stage.')
+	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, By default, scidff uses the first time point as the ancestor for all following time points. ' +
+                                                                         'It is recommended to use this option if users believe that the cells at the first time points are already well differentiated and there ' +
+                                                                         'exits at least 2 clusters/sub-types at the first time point. To enable this option, set it as 1.')
 	args=parser.parse_args()
 
 	scg=args.input
