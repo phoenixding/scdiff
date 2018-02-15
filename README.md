@@ -14,7 +14,7 @@
 
 SCDIFF is a python package designed to analyze the cell differentiation process 
 using time-series single cell RNA-seq data. It can be used to predict the
-transcription factors, which regulate the cell differentiation process. It
+transcription factors, which regulate the cell differentiation process and the differential genes along the differentiation process. It
 also visualizes the differentiation process using a graph, in which nodes
 represent different sub-population cells and edges denote the 
 differentiation paths. 
@@ -55,7 +55,7 @@ Linux, Mac:
 $sudo python setup.py install 
 ```
 
-or install via pip:  
+or install via pip (should work in most operating systems):  
 
 ```shell
 $sudo pip install --upgrade https://github.com/phoenixding/scdiff/zipball/master
@@ -192,24 +192,27 @@ For the scdiff options, please refer to the [usage](#usage) section.
 
 The results are given under the specified directory. 
 The predicted model was provided as a json file, which is visualized by the
-provided JavaScript. 
+provided JavaScript. Please use *Chrome/FireFox/Safari* browser for best experience.   
 
 ![example_out_fig](./scdiff/img/example_out.png)
 
 The following is the manual for the visualization page. 
 
-**Global CONFIG (Left panel)**:
+**Visualization Config (Left panel)**:
   
 * **RESET**: It restores all configs to default.   
 The slider resizes the visualization. 
 
+* **CELL PLOTS** :
+	* **Plot Cells**: show PCA/TSNE plots for all cells (use the radio button to select the dimension reduction method : PCA/T-SNE for visualization).
+
 * **TF CONFIG** :  
 	* **Show/Hide TF** : display/hide the regulating TFs for each path.  
-	* **Explore  TF** : highlight the regulating paths for given TF.  
+	* **Explore  TF** : highlight the regulating paths for given TF and also show the expression profile of the input TF. 
 
 * **GENE CONFIG**:  
 	* **Show/Hide DE**: display/hide the differential genes for each path. 
-	* **Explore DE gene** : highlight the paths with those DE genes.     
+	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
 
 * **Download**: 
 	* **Generate Figure**: download the visualization figure.

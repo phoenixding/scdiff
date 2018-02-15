@@ -1,17 +1,34 @@
 #!/usr/bin/env python
 
 import pdb,sys,os,json
-
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 
 #-----------------------------------------------------------------------
 # export data ==>json
 def GtoJson(G1,GL,dTD):
+	#pdb.set_trace()
+	xmatrix=[(item.__dict__)["E"] for item in G1.Cells]
+	pca=PCA(n_components=50)
+	pca2=PCA(n_components=2)
+	#pdb.set_trace()
+	xpca2_matrix=pca2.fit_transform(xmatrix)
+	xpca_matrix=pca.fit_transform(xmatrix)
+	tnse=TSNE(n_components=2)
+	xtsne_matrix=tnse.fit_transform(xpca_matrix)
+	#pdb.set_trace()
+	
 	CL=[]
-	for i in G1.Cells:
-		jci=i.__dict__
+	for i in range(len(G1.Cells)):
+		jci=(G1.Cells[i]).__dict__
+		ixtsne=xtsne_matrix[i]
+		ixpca=xpca2_matrix[i]
 		jci={item:jci[item] for item in ["ID","T","typeLabel"]}
+		jci["TE"]=list(ixtsne)
+		jci["PE"]=list(ixpca)
+		#pdb.set_trace()
 		CL.append(jci)
-		
+			
 	NL=[]
 	
 	MTL=[item.mT[0] for item in G1.Nodes]
@@ -63,6 +80,7 @@ def viz(scg_name,G1,output):
 	dTD=G1.dTD
 	
 	css_template="""
+	
 	body{
 		width:1600px;
 	}
@@ -189,6 +207,10 @@ def viz(scg_name,G1,output):
 	#downloadconfig.menu-item  ul{
 		height:200px;
 	}
+	
+	#cellplot.menu-item  ul{
+		height:60px;
+	}
 
 
 	/*li Styles*/
@@ -243,11 +265,14 @@ def viz(scg_name,G1,output):
 	.axis{
 		color: red;
 	}
+	
+
 	"""
 
 	#-----------------------------------------------------------------------
 	# HTML template
 	HTML_template="""
+	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -257,17 +282,33 @@ def viz(scg_name,G1,output):
 		<!--canvg library-->
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="https://www.lactame.com/lib/ml/2.2.0/ml.min.js"></script>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
 		<script src="parseJSON.js"></script>
 		<script type="text/javascript" src="%s"></script>
+		
+		<script>
+		var fold=function(divid){
+			var x=document.getElementById(divid);
+			if (x.style.display === 'none') {
+				x.style.display = 'block';
+			} else {
+				x.style.display = 'none';
+			}
+
+		}
+
+		</script>
+		
 	  </head>
 	  <body onload="onload()">
 		  <!-- This DIV contains static visualization configuration config-->
 		  <div id="div_config">
 			  <div class="tf">
 				<nav>
+					<div class="menu-item"><h4><a onclick="fold('globalconfig')">GLOBAL CONFIG</a></h4></div>  
 					<div class="menu-item" id="globalconfig">
-					  <h4><a href="#">GLOBAL CONFIG</a></h4>
 					  <ul>
 						 <li>
 						   <span>Reset: <input type="submit", onclick="resetconfig()" value="RESET"></span><br>
@@ -283,9 +324,22 @@ def viz(scg_name,G1,output):
 							</li>
 					  </ul>
 					</div>
-					  
+					
+					<div class="menu-item"><h4><a onclick="fold('cellplot')">CELL PLOTS</a></h4></div>  
+					<div class="menu-item" id="cellplot">
+					  <ul>
+						<li>
+							<input type="submit" value="Plot Cells" onclick="vizCells()">
+							<input type="radio" name="viztype" value="tsne" id="viztypet" checked> T-SNE
+							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA <br>
+							</li>
+
+					  </ul>
+					</div>
+					
+					
+					<div class="menu-item"><h4><a onclick="fold('tfconfig')">DOWNLOAD Config</a></h4></div>   
 					<div class="menu-item" id="tfconfig">
-					  <h4><a href="#">TF CONFIG</a></h4>
 					  <ul>
 						<li><label title="show top ranked 20 regulating TFs (if have) for each edge">Show/Hide TF for each path: <input class="checkbox" id="tfcheck" type="checkbox"  onchange="showhideTF(checked)"> </input></label> </li>
 						<li>
@@ -296,8 +350,8 @@ def viz(scg_name,G1,output):
 					  </ul>
 					</div>
 					  
+					<div class="menu-item"><h4><a onclick="fold('geneconfig')">GENE CONFIG</a></h4></div>  
 					<div class="menu-item" id="geneconfig">
-					  <h4><a href="#">GENE CONFIG</a></h4>
 					  <ul>
 						<li><label title="show top ranked 20 (both up and down regulated differentially expressed genes for each edge)">Show/Hide DE genes for each path:<input class="checkbox" id="genecheck" type="checkbox"  onchange="showhideDE(checked)"> </input></label></li>
 						<li>
@@ -308,16 +362,17 @@ def viz(scg_name,G1,output):
 					  </ul>
 					</div>
 					  
-					<div class="menu-item" id="downloadconfig">
-					  <h4><a href="#">Download</a></h4>
-					  <ul>
-						<li><label><input type="submit" onclick="downloadfig()" value="Generate Figure:"></label></li>
-						<li><a id="downloadlink"></a></li>
-						<li><label><input type="submit" onclick="downloadtf()" value="Generate TF download file:"></label></li>
-						<li><a id="tfdownloadlink"></a></li>
-						<li><label><input type="submit" onclick="downloadde()" value="Generate DE download file:"></label></li>
-						<li><a id="dedownloadlink"></a></li>
+					<div class="menu-item"><h4><a onclick="fold('downloadconfig')">DOWNLOAD</a></h4></div>  
+						<div class="menu-item" id="downloadconfig">
+						  <ul>
+							<li><label><input type="submit" onclick="downloadfig()" value="Generate Figure:"></label></li>
+							<li><a id="downloadlink"></a></li>
+							<li><label><input type="submit" onclick="downloadtf()" value="Generate TF download file:"></label></li>
+							<li><a id="tfdownloadlink"></a></li>
+							<li><label><input type="submit" onclick="downloadde()" value="Generate DE download file:"></label></li>
+							<li><a id="dedownloadlink"></a></li>
 					  </ul>
+					  </div>
 					</div>
 				</nav>
 			  </div>
@@ -327,13 +382,17 @@ def viz(scg_name,G1,output):
 		  </div>
 		  <!-- This DIV contains dynamic data-driven svg elements -->
 			<div id="div_svg"> </div>
+			<div id="scatterdiv"></div>
 			</body>
 	</html>
+	
+
 	"""
 
 	#-----------------------------------------------------------------------
 	# javascript
 	javascript="""
+	
 	function onload(){
 		RL=parseJSON(data);
 		nodes=buildTree(RL[2]);
@@ -344,7 +403,85 @@ def viz(scg_name,G1,output):
 		dTD=RL[4];
 		drawTree(root);
 		updateNodes(nodes);
+		colorList=getColors();
+		colorList=Object.values(colorList);
 	}
+	
+	//Visualization (tsne/pca) plots for cells
+	
+	function vizCells(){
+		var plotType=document.getElementById("viztypep").checked;
+		var xData=[];
+		var xLabels=[];
+		for (var inode of nodes){
+			var inode_id=inode["ID"];
+			var inode_cells=inode["CELL"];
+			var inode_cells=inode_cells.map(function(d){return cells[d]});
+			for (var cell of inode_cells){
+				if (plotType){
+					xData.push(cell.PE);
+				}else{
+					xData.push(cell.TE);
+				}
+				xLabels.push(inode_id);
+			}
+		}
+		scatterplot(xData,xLabels);
+	}
+	
+	//scatter plot
+	function scatterplot(xData,xLabels){	
+		var dlabels={};
+		for (var ix in xData){
+			var di=xData[ix];
+			var li=xLabels[ix];
+			if (!(li in dlabels)){
+				dlabels[li]=[{"x": di[0],"y": di[1]}];
+			}else{
+				dlabels[li].push({"x": di[0],"y": di[1]});
+			}
+		}
+			
+		var CombinedDataSet=[];
+		var colorCounter=0;
+		for (var di in dlabels){
+			var xlabel=di;
+			var xList=dlabels[di];
+			CombinedDataSet.push({"label": xlabel, "data": xList, "backgroundColor": colorList[colorCounter]});
+			colorCounter+=1;
+		}
+		
+		var plotdata={"datasets":CombinedDataSet};
+		
+		var newW3 = open('','_blank','height=1200,width=1400')
+		newW3.document.write('<head><title>scatter plot</title> </head><body></body>');
+		d3.select(newW3.document.body).append("canvas")
+					.attr("id","scatterplot")
+					.attr("width","1200px")
+					.attr("height","1000px");
+					
+		var ctx=newW3.document.getElementById("scatterplot").getContext('2d');
+		
+		
+		var scatterChart = new Chart(ctx, {
+			type: 'scatter',
+			data: plotdata,
+			options: {
+            responsive : false,
+            scales: {
+                xAxes: [{
+                    type: 'linear',
+                    position: 'bottom'
+                }]
+            }
+        }
+			
+		});
+		
+	}
+	
+	
+	
 
 	//this function is used to pre-compute all needed data for nodes (e.g. target fold change).
 	function updateNodes(nodes){
@@ -693,7 +830,8 @@ def viz(scg_name,G1,output):
 		width = 1200 - margin.right - margin.left,
 		height =1400 - margin.top - margin.bottom;
 		var i = 0;
-		var tree = d3.layout.tree();
+		//var tree = d3.layout.tree();
+		tree=d3.layout.tree();
 		tree.size([width,height]);
 		
 		var diagonal = d3.svg.diagonal()
@@ -1603,7 +1741,7 @@ def viz(scg_name,G1,output):
 	function List2TSV(LST){
 		var out="";
 		for (var i in LST){
-			var LSTI=LST[i].join("\t");
+			var LSTI=LST[i].join("	");
 			out+=LSTI+'\\n';
 		}
 		return out;
@@ -1656,6 +1794,160 @@ def viz(scg_name,G1,output):
 		newW.document.getElementById(dlink).href=url;
 		newW.document.getElementById(dlink).download="download.xls";
 		newW.document.getElementById(dlink).innerHTML="Table ready!click to save! (please add the right file extension .xls if not prompted)"
+	}
+	
+	function getColors(){
+			var colorObject={
+		  "red": "#ff0000",
+		  "orange": "#ffa500",
+		  "yellow": "#ffff00",
+		  "green": "#008000",
+		  "blue": "#0000ff",
+		  "cyan": "#00ffff",
+		  "purple": "#800080",
+		  "pink": "#ffc0cb",
+		  "black": "#000000",
+		  "brown": "#a52a2a", 
+		  "burlywood": "#deb887",
+		  "cadetblue": "#5f9ea0",
+		  "chartreuse": "#7fff00",
+		  "chocolate": "#d2691e",
+		  "coral": "#ff7f50",
+		  "cornflowerblue": "#6495ed",
+		  "cornsilk": "#fff8dc",
+		  "crimson": "#dc143c",
+		  "darkblue": "#00008b",
+		  "darkcyan": "#008b8b",
+		  "darkgoldenrod": "#b8860b",
+		  "darkgray": "#a9a9a9",
+		  "darkgreen": "#006400",
+		  "darkgrey": "#a9a9a9",
+		  "darkkhaki": "#bdb76b",
+		  "darkmagenta": "#8b008b",
+		  "darkolivegreen": "#556b2f",
+		  "darkorange": "#ff8c00",
+		  "darkorchid": "#9932cc",
+		  "darkred": "#8b0000",
+		  "darksalmon": "#e9967a",
+		  "darkseagreen": "#8fbc8f",
+		  "darkslateblue": "#483d8b",
+		  "darkslategray": "#2f4f4f",
+		  "darkslategrey": "#2f4f4f",
+		  "darkturquoise": "#00ced1",
+		  "darkviolet": "#9400d3",
+		  "deeppink": "#ff1493",
+		  "deepskyblue": "#00bfff",
+		  "dimgray": "#696969",
+		  "dimgrey": "#696969",
+		  "dodgerblue": "#1e90ff",
+		  "firebrick": "#b22222",
+		  "floralwhite": "#fffaf0",
+		  "forestgreen": "#228b22",
+		  "fuchsia": "#ff00ff",
+		  "gainsboro": "#dcdcdc",
+		  "ghostwhite": "#f8f8ff",
+		  "gold": "#ffd700",
+		  "goldenrod": "#daa520",
+		  "gray": "#808080",
+		  "greenyellow": "#adff2f",
+		  "grey": "#808080",
+		  "honeydew": "#f0fff0",
+		  "hotpink": "#ff69b4",
+		  "indianred": "#cd5c5c",
+		  "indigo": "#4b0082",
+		  "ivory": "#fffff0",
+		  "khaki": "#f0e68c",
+		  "lavender": "#e6e6fa",
+		  "lavenderblush": "#fff0f5",
+		  "lawngreen": "#7cfc00",
+		  "lemonchiffon": "#fffacd",
+		  "lightblue": "#add8e6",
+		  "lightcoral": "#f08080",
+		  "lightcyan": "#e0ffff",
+		  "lightgoldenrodyellow": "#fafad2",
+		  "lightgray": "#d3d3d3",
+		  "lightgreen": "#90ee90",
+		  "lightgrey": "#d3d3d3",
+		  "lightpink": "#ffb6c1",
+		  "lightsalmon": "#ffa07a",
+		  "lightseagreen": "#20b2aa",
+		  "lightskyblue": "#87cefa",
+		  "lightslategray": "#778899",
+		  "lightslategrey": "#778899",
+		  "lightsteelblue": "#b0c4de",
+		  "lightyellow": "#ffffe0",
+		  "lime": "#00ff00",
+		  "limegreen": "#32cd32",
+		  "linen": "#faf0e6",
+		  "magenta": "#ff00ff",
+		  "maroon": "#800000",
+		  "mediumaquamarine": "#66cdaa",
+		  "mediumblue": "#0000cd",
+		  "mediumorchid": "#ba55d3",
+		  "mediumpurple": "#9370db",
+		  "mediumseagreen": "#3cb371",
+		  "mediumslateblue": "#7b68ee",
+		  "mediumspringgreen": "#00fa9a",
+		  "mediumturquoise": "#48d1cc",
+		  "mediumvioletred": "#c71585",
+		  "midnightblue": "#191970",
+		  "mintcream": "#f5fffa",
+		  "mistyrose": "#ffe4e1",
+		  "moccasin": "#ffe4b5",
+		  "navajowhite": "#ffdead",
+		  "navy": "#000080",
+		  "oldlace": "#fdf5e6",
+		  "olive": "#808000",
+		  "olivedrab": "#6b8e23",
+		  "orangered": "#ff4500",
+		  "orchid": "#da70d6",
+		  "palegoldenrod": "#eee8aa",
+		  "palegreen": "#98fb98",
+		  "paleturquoise": "#afeeee",
+		  "palevioletred": "#db7093",
+		  "papayawhip": "#ffefd5",
+		  "peachpuff": "#ffdab9",
+		  "peru": "#cd853f",
+		  "plum": "#dda0dd",
+		  "powderblue": "#b0e0e6",
+		  "rebeccapurple": "#663399",
+		  "rosybrown": "#bc8f8f",
+		  "royalblue": "#4169e1",
+		  "saddlebrown": "#8b4513",
+		  "salmon": "#fa8072",
+		  "sandybrown": "#f4a460",
+		  "seagreen": "#2e8b57",
+		  "seashell": "#fff5ee",
+		  "sienna": "#a0522d",
+		  "silver": "#c0c0c0",
+		  "skyblue": "#87ceeb",
+		  "slateblue": "#6a5acd",
+		  "slategray": "#708090",
+		  "slategrey": "#708090",
+		  "snow": "#fffafa",
+		  "springgreen": "#00ff7f",
+		  "steelblue": "#4682b4",
+		  "tan": "#d2b48c",
+		  "teal": "#008080",
+		  "thistle": "#d8bfd8",
+		  "tomato": "#ff6347",
+		  "turquoise": "#40e0d0",
+		  "violet": "#ee82ee",
+		  "wheat": "#f5deb3",
+		  "white": "#ffffff",
+		  "whitesmoke": "#f5f5f5",
+		  "aliceblue": "#f0f8ff",
+		  "antiquewhite": "#faebd7",
+		  "aqua": "#00ffff",
+		  "aquamarine": "#7fffd4",
+		  "azure": "#f0ffff",
+		  "beige": "#f5f5dc",
+		  "bisque": "#ffe4c4",
+		  "blanchedalmond": "#ffebcd",
+		  "blueviolet": "#8a2be2",
+		  "yellowgreen": "#9acd32"
+		};
+		return colorObject;
 	}
 
 	"""

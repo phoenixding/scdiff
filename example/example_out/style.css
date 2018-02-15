@@ -1,4 +1,5 @@
 
+	
 	body{
 		width:1600px;
 	}
@@ -125,6 +126,10 @@
 	#downloadconfig.menu-item  ul{
 		height:200px;
 	}
+	
+	#cellplot.menu-item  ul{
+		height:60px;
+	}
 
 
 	/*li Styles*/
@@ -179,4 +184,6 @@
 	.axis{
 		color: red;
 	}
+	
+
 	
