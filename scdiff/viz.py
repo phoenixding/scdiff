@@ -34,15 +34,15 @@ def GtoJson(G1,GL,dTD):
 	MTL=[item.mT[0] for item in G1.Nodes]
 	MIN_MTL=min(MTL)
     
-	DTL=[sum(item.DTA)/len(item.DTA) for item in G1.Nodes]
-	MIN_DTL=min(DTL)
+	#DTL=[sum(item.DTA)/len(item.DTA) for item in G1.Nodes]
+	#MIN_DTL=min(DTL)
     
 	for j in G1.Nodes:
 		ij=[G1.Cells.index(item) for item in j.cells]
 		try:
 			#pdb.set_trace()
-			#DT=max(0,(G1.Nodes[0].mT[0]-j.mT[0])/(G1.Nodes[0].mT[0]-MIN_MTL))
-			DT=max(0,(DTL[0]-sum(j.DTA)/len(j.DTA))/(DTL[0]-MIN_DTL))
+			DT=max(0,(G1.Nodes[0].mT[0]-j.mT[0])/(G1.Nodes[0].mT[0]-MIN_MTL))
+			#DT=max(0,(DTL[0]-sum(j.DTA)/len(j.DTA))/(DTL[0]-MIN_DTL))
 		except:
 			DT='NA'
 		jcj={'ID':j.ID,'T':j.T,'E':j.E,'D':DT,'CELL':ij,"parent": "null" if j.P==None else G1.Nodes.index(j.P),"children": "null" if j.C==[] else [G1.Nodes.index(item) for item in j.C]}
