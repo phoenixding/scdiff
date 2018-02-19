@@ -338,7 +338,7 @@ def viz(scg_name,G1,output):
 					</div>
 					
 					
-					<div class="menu-item"><h4><a onclick="fold('tfconfig')">DOWNLOAD Config</a></h4></div>   
+					<div class="menu-item"><h4><a onclick="fold('tfconfig')">TF CONFIG</a></h4></div>   
 					<div class="menu-item" id="tfconfig">
 					  <ul>
 						<li><label title="show top ranked 20 regulating TFs (if have) for each edge">Show/Hide TF for each path: <input class="checkbox" id="tfcheck" type="checkbox"  onchange="showhideTF(checked)"> </input></label> </li>
