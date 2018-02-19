@@ -170,7 +170,8 @@ class Clustering:
 			if len(AK)>0:
 				CAK={item:AK.count(item) for item in set(AK)}
 				SortKey=sorted(CAK.keys(),key=lambda item:(CAK[item],-1*float(item)), reverse=True)
-				SortKey=[item for item in SortKey if CAK[item]>=CAK[SortKey[0]]-1]
+				#SortKey=[item for item in SortKey if CAK[item]>=CAK[SortKey[0]]-1]
+				SortKey=[item for item in SortKey if CAK[item]>=CAK[SortKey[0]]-0]
 				ATP=[AT[K.index(item)] for item in SortKey]
 				bk=AT.index(min(ATP))
 			else:
