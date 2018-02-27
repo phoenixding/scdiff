@@ -81,6 +81,7 @@ def viz(scg_name,G1,output):
 	
 	css_template="""
 	
+	
 	body{
 		width:1600px;
 	}
@@ -208,6 +209,10 @@ def viz(scg_name,G1,output):
 		height:200px;
 	}
 	
+	#geneconfig.menu-item ul{
+		height:160px;
+	}
+	
 	#cellplot.menu-item  ul{
 		height:60px;
 	}
@@ -266,12 +271,13 @@ def viz(scg_name,G1,output):
 		color: red;
 	}
 	
-
 	"""
 
 	#-----------------------------------------------------------------------
 	# HTML template
 	HTML_template="""
+	
+	
 	
 	<!DOCTYPE html>
 	<html lang="en">
@@ -346,6 +352,7 @@ def viz(scg_name,G1,output):
 							<input type="submit" value="Explore TF" onclick="exploretf()">
 							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { exploretf() }">
 							</li>
+				
 
 					  </ul>
 					</div>
@@ -358,7 +365,14 @@ def viz(scg_name,G1,output):
 							<input type="submit" value="Explore DE gene" onclick="explorede()">
 							<input type="text" id="deName" value="" onkeydown="if (event.keyCode == 13) { explorede() }">
 							</li>
-
+						
+						<li>
+							<input type="submit" value="Find DE genes between:" onclick="exploredebetween()"> <br>
+							<div id="node1dropdowndiv">Node1: </div>
+							<div id="node2dropdowndiv">Node2: </div>
+							<!--<label >Node 1: </label><input type="text" id="denode1"><br>-->
+							<!--<label >Node 2: </label><input type="text" id="denode2"> -->
+							</li>
 					  </ul>
 					</div>
 					  
@@ -367,10 +381,13 @@ def viz(scg_name,G1,output):
 						  <ul>
 							<li><label><input type="submit" onclick="downloadfig()" value="Generate Figure:"></label></li>
 							<li><a id="downloadlink"></a></li>
+							<li><label><input type="submit" onclick="downloadjson()" value="Generate Json download file:"></label></li>
+							<li><a id="jsondownloadlink"></a></li>
 							<li><label><input type="submit" onclick="downloadtf()" value="Generate TF download file:"></label></li>
 							<li><a id="tfdownloadlink"></a></li>
 							<li><label><input type="submit" onclick="downloadde()" value="Generate DE download file:"></label></li>
 							<li><a id="dedownloadlink"></a></li>
+							
 					  </ul>
 					  </div>
 					</div>
@@ -387,11 +404,17 @@ def viz(scg_name,G1,output):
 	</html>
 	
 
+	
+
+	
+
 	"""
 
 	#-----------------------------------------------------------------------
 	# javascript
 	javascript="""
+	
+	
 	
 	function onload(){
 		RL=parseJSON(data);
@@ -587,6 +610,7 @@ def viz(scg_name,G1,output):
 		document.getElementById("bgcolor").value="#333333";
 		setbgcolor();
 		resetPath();
+		window.location.reload(true);
 	}
 	//set bgcolor
 	function setbgcolor(){
@@ -643,9 +667,151 @@ def viz(scg_name,G1,output):
 		//alert("implements explore tf:(1) highlight tf re-regualting path; (2): plot tf expression (3) plot tf target expression, (4) more");
 	}
 
-
-	//plot tf
+	//plottf update
 	function plottf(tfinput){
+		if (GL.indexOf(tfinput)!=-1){		
+			//plottf(tfinput);
+			barplot(nodes.map(function(d){return "E"+d.T+"_"+d.ID;}),nodes.map(function(d){return (d.E[GL.indexOf(tfinput)]).toFixed(3);}),"Expression of "+tfinput);
+			var targets=dTD[tfinput];
+			var targets=targets.filter(function(d){
+				if (GL.indexOf(d)!=-1){
+					return true;
+				} return false;
+			});
+			
+			var targetIndex=targets.map(function(d){
+					return GL.indexOf(d);
+				})
+			
+			var nodeIDList=[];
+			var nodeValueList=[];
+			var fcut=0.5;
+			for (var node of nodes){
+				if (node.endEdge){
+					nodeIDList.push("E"+node.T+"_"+node.ID);
+					var detargets=[];
+					var tfde=(node.fc)[tfinput];
+					for (var dt of targets){
+						if (Math.abs(node.fc[dt])>fcut){
+							detargets.push([dt,(node.fc)[dt]]);	
+						}
+					}
+					if (detargets.length>0){
+						var deE=detargets.map(function(d){return d[1];});
+						var sumdeE=deE.reduce(function(a,b){return a+b;});
+						var sumdeE=(sumdeE/detargets.length).toFixed(3);
+					}else{
+						var sumdeE=0;
+					}
+					nodeValueList.push(sumdeE);
+					
+				}
+				
+				
+			}
+			barplot(nodeIDList,nodeValueList,"Average targets fold change of "+tfinput+"(only considered differential targets, the fold change is calculated along the edge ending at given node)",500);
+			//console.log(targets);
+		}
+	}
+	
+	//line plot
+	
+	function lineplot(X,Y,Z){
+		//X: x-axis values
+		//Y: y-axis values
+		//Z: legend
+		
+		var newW3 = open('','_blank','height=600,width=800');
+		newW3.document.write('<head><title>line plot</title> </head><body></body>');
+		d3.select(newW3.document.body).append("canvas")
+					.attr("id","lineplot")
+					.attr("width","700px")
+					.attr("height","500px");
+					
+		var ctx=newW3.document.getElementById("lineplot").getContext('2d');
+		
+		var lineChart = new Chart(ctx, {
+			type: 'line',
+			data:{
+				labels: X,
+				datasets:  [{
+					data: Y,
+					fill: false,
+					label: ""
+				}]
+			},
+			options: {
+				responsive : false,
+				title: {
+					display: true,
+					text: Z
+				}
+        	
+			}
+		});
+	}
+	
+	//bar plot
+	function barplot(X,Y,Z,P){
+		//X: x-axis values
+		//Y: y-axis values
+		//Z: legend
+		
+		var newW3 = open('','_blank','height=600,width=800,left='+P);
+		newW3.document.write('<head><title>line plot</title> </head><body></body>');
+		d3.select(newW3.document.body).append("canvas")
+					.attr("id","lineplot")
+					.attr("width","700px")
+					.attr("height","500px");
+					
+		var ctx=newW3.document.getElementById("lineplot").getContext('2d');
+		
+		var lineChart = new Chart(ctx, {
+			type: 'bar',
+			data:{
+				labels: X,
+				datasets:  [{
+					data: Y,
+					backgroundColor: "blue",
+					label: ""
+				}]
+			},
+			options: {
+				responsive : false,
+				title: {
+					display: true,
+					text: Z
+				},
+				animation: {
+                    duration: 1,
+                    onComplete: function () {
+                        var chartInstance = this.chart,
+                            ctx = chartInstance.ctx;
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+                        ctx.textBaseline = 'bottom';
+
+                        this.data.datasets.forEach(function (dataset, i) {
+                            var meta = chartInstance.controller.getDatasetMeta(i);
+                            meta.data.forEach(function (bar, index) {
+                                var data = dataset.data[index];
+                                if (data>0){
+									ctx.fillText(data, bar._model.x, bar._model.y -5);
+								} else{
+									ctx.fillText(data, bar._model.x, bar._model.y + 15);
+								}
+
+                            });
+                        });
+                    }
+				}
+			}
+		});
+	}
+	
+		
+	//plot tf
+	function plottf1(tfinput){
 		var newW2 = open('','_blank','height=600,width=600,left=1400,top=200,scrollbars=yes')
 		newW2.document.write("<head><title>Plot TF</title> <link rel='stylesheet' type='text/css' href='style.css'></head><body></body>");
 		
@@ -738,6 +904,105 @@ def viz(scg_name,G1,output):
 		  .text("Expression of "+tfinput);
 
 	}
+	
+	//hanlde exploredebetween
+	
+	function exploredebetween(){
+		//var xdenode1=d3.select("#denode1").property("value").toUpperCase();
+		//var xdenode2=d3.select("#denode2").property("value").toUpperCase();
+		
+		var xdenode1=document.getElementById('node1dropdown').value.toUpperCase();
+		var xdenode2=document.getElementById('node2dropdown').value.toUpperCase();
+		
+		var denode1=xdenode1.split("_").slice(1);
+		denode1=denode1.join("_");
+		
+		var denode2=xdenode2.split("_").slice(1);
+		denode2=denode2.join("_");
+		
+		//var denode1=xdenode1;
+		//var denode2=xdenode2;
+		
+		var node1;
+		var node2;
+		for (var node of nodes){
+			if (node.ID==denode1){
+				node1=node;
+			}
+			if (node.ID==denode2){
+				node2=node;
+			}
+		}
+		
+		var DEGList=[]
+		var topcut=100;
+		for (var gi in node1.E){
+			var fc=node2.E[gi]-node1.E[gi];
+			fc=fc.toFixed(3);
+			DEGList.push([GL[gi],fc]);	
+		} 
+		DEGList.sort(function(a,b){
+			return b[1]-a[1];
+		});
+		var upList=DEGList.slice(0,topcut);
+		
+		DEGList.sort(function(a,b){
+			return a[1]-b[1];
+		});
+		var downList=DEGList.slice(0,topcut);
+		
+		
+		//create table for DEG between 2 given ndoes
+		//console.log(DEGList);
+		
+		var newW = open('','_blank','height=600,width=800,left=200,top=200,scrollbars=yes')
+		newW.document.write("<head><title>Differentially expressed genes between 2 given nodes</title></head><body></body>");
+		newW.document.title="loading...";
+
+		//adding TF details
+		var tdiv=d3.select(newW.document.body)
+		.style("background","white")
+		.append("div")
+		.style("padding-left","50px")
+		.style("padding-top","50px")
+		.attr("width",400)
+		.attr("height",600)
+		.attr("class","deg_between");
+		
+	
+		tdiv
+		.append("p")
+		.text("Table Differentially expressed genes (UP-regulated) between : "+xdenode1+" and "+xdenode2);
+				
+		createTable(tdiv,"deg_between",upList);
+		tdiv.append("button")
+		.text("click to create the excel table")
+		.on("click",function(){
+				table2XLS(newW,"deg_between","degupdlink");
+			});
+			
+		tdiv.append("a")
+		.attr("href","#")
+		.attr("id","degupdlink");
+		
+		tdiv
+		.append("p")
+		.text("Table Differentially expressed genes (Down-regulated) between : "+xdenode1+" and "+xdenode2);
+				
+		createTable(tdiv,"deg_between",downList);
+		tdiv.append("button")
+		.text("click to create the excel table")
+		.on("click",function(){
+				table2XLS(newW,"deg_between","degdowndlink");
+			});
+			
+		tdiv.append("a")
+		.attr("href","#")
+		.attr("id","degdowndlink");
+		
+	};
+	
+	
 	//handle explorede
 
 	function explorede(){
@@ -931,6 +1196,17 @@ def viz(scg_name,G1,output):
 		tooltipsvg = d3.select("body").append("div")	
 			.attr("class", "tooltip")
 			.append("svg");
+		
+		// create dropdown
+		var NodeIDList=nodes.map(function(d){return "E"+d.T+"_"+d.ID;});
+		createDropDown(NodeIDList[0],"#node1dropdowndiv","node1dropdown",NodeIDList,null);
+		createDropDown(NodeIDList[1],"#node2dropdowndiv","node2dropdown",NodeIDList,null);
+		
+		//rotate svg
+		/*
+		d3.select("svg")
+		.attr("transform","rotate(-90 0 0)");
+		* */
 	}
 	//----------------------------------------------------------------------
 	//show/hide controls
@@ -1105,7 +1381,7 @@ def viz(scg_name,G1,output):
 		gc_enter.call(addTFText,20);
 		
 	}
-
+	
 	// add TF texts 
 	function addTFText(text,showcutoff){
 		text.each(function(d){
@@ -1474,7 +1750,35 @@ def viz(scg_name,G1,output):
 		.text(function(d){return d;});
 	}
 
-
+	//create drop down
+	var createDropDown=function(FirstRow,tfdropdowndiv,dropdownid,TFs,onChange){
+		var Keys=[FirstRow];
+		TFs.sort();
+		for (var tf of TFs){
+			Keys.push(tf);
+		}
+		
+		d3.select(tfdropdowndiv)
+		.select("select")
+		.remove();
+		
+		d3.select(tfdropdowndiv)
+		.append("select")
+		.attr("id",dropdownid)
+		.on("change",onChange)
+		.selectAll("option")
+		.data(Keys)
+		.enter()
+		.append("option")
+		.text(function(d){
+			return d;
+		})
+		.attr("value",function(d){
+			return d;
+			});
+	
+	}
+	
 	//action on mouse out nodeID: E1_16.0_0Proliferative AT2 Early Precursor,6Proliferative Bi-potential Precursor,1
 
 	function outNode(){
@@ -1645,7 +1949,25 @@ def viz(scg_name,G1,output):
 
 	//---------------------------------------------------------------------
 	//download functions here
-
+	
+	//download tf
+	function downloadjson(){
+		plswait("jsondownloadlink");
+		window.setTimeout(createjsondownload,10);
+	}
+	
+	function createjsondownload(){
+		 var dataObj=JSON.parse(data);
+		 var outObj={"GeneList":dataObj[0], "CellList":dataObj[1], "NodeList":dataObj[2],"EdgeList":dataObj[3]};
+		 var outObjStr=JSON.stringify(outObj,null,"\t");
+		 var blob=new Blob([outObjStr],{type:'application/json;charset=utf-8'});
+		 outurl=window.URL.createObjectURL(blob);
+		 d3.select("#jsondownloadlink")
+		.attr("href",outurl)
+		.attr("download","download.json")
+		.text("Ready,Click to download");
+	}
+	
 	//download tf
 	function downloadde(){
 		plswait("dedownloadlink");
@@ -1949,7 +2271,7 @@ def viz(scg_name,G1,output):
 		};
 		return colorObject;
 	}
-
+	
 	"""
 	#-----------------------------------------------------------------------
 	

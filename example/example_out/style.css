@@ -1,5 +1,6 @@
 
 	
+	
 	body{
 		width:1600px;
 	}
@@ -127,6 +128,10 @@
 		height:200px;
 	}
 	
+	#geneconfig.menu-item ul{
+		height:160px;
+	}
+	
 	#cellplot.menu-item  ul{
 		height:60px;
 	}
@@ -185,5 +190,4 @@
 		color: red;
 	}
 	
-
 	

@@ -194,7 +194,7 @@ The results are given under the specified directory.
 The predicted model was provided as a json file, which is visualized by the
 provided JavaScript. Please use *Chrome/FireFox/Safari* browser for best experience.   
 
-![example_out_fig](./scdiff/img/example_out.png)
+![example_out_fig](./images/example_out.png)
 
 The following is the manual for the visualization page. 
 
@@ -208,14 +208,60 @@ The slider resizes the visualization.
 
 * **TF CONFIG** :  
 	* **Show/Hide TF** : display/hide the regulating TFs for each path.  
-	* **Explore  TF** : highlight the regulating paths for given TF and also show the expression profile of the input TF. 
+	* **Explore  TF** : highlight the regulating paths for given TF; show the expression profile of the input TF and the average fold change of the TF targets.  
 
 * **GENE CONFIG**:  
-	* **Show/Hide DE**: display/hide the differential genes for each path. 
+	* **Show/Hide DE **: display/hide the differentially expressed genes for each edge.  
 	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
+	* **Find DE genes between** : find the differentially expressed genes between two specified nodes. Use the dropdown menu to specify two nodes for comparison. 
 
 * **Download**: 
 	* **Generate Figure**: download the visualization figure.
+	* **Generate Json download file**: download the json file, which contains all information of the model.   
+		
+		```
+		Json format:   
+		{
+			"GeneList": [List of gene symbols],
+			"CellList": [                       // list of all cells
+				{	
+					// a cell instance
+					"TE": [x0,y0], // cell coordinates in 2D space projected by T-SNE 
+					"PE": [x1,y1], // cell coordinates in 2D space projected by PCA
+					"typeLabel": cell Label, // label of the cell if known
+					"ID": cell ID,
+					"T": cell measure time
+					
+				},
+				...
+			],
+			
+			"NodeList":[                      // list of all nodes in Graph
+				{	
+					// a node instance
+					"E": [list of gene expression in node, please refer to GeneList for gene symbols],
+					"parent": parent node index,
+					"children": list of children node indexes,
+					"CELL": list of cell indexes, // all the cells assigned to the node
+					"T": node time //estimated node level
+					"ID": node ID 
+				},
+				...
+			],
+			"EdgeList":[                   // list of all edges in Graph
+				{
+					// an edge instance
+					"to": edge target node index,
+					"from": edge source node index,
+					"de": List of differential genes along the edge,
+					"etf": List of regulating TFs for the edge
+					
+				},
+				...
+			]
+			
+		}
+		```  
 	* **Generate TF download File** : download regulating TFs for all paths.
 	* **Generate DE download file**: download DE genes for all paths. 
 

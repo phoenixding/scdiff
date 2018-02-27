@@ -1,5 +1,7 @@
 
 	
+	
+	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -65,7 +67,7 @@
 					</div>
 					
 					
-					<div class="menu-item"><h4><a onclick="fold('tfconfig')">DOWNLOAD Config</a></h4></div>   
+					<div class="menu-item"><h4><a onclick="fold('tfconfig')">TF CONFIG</a></h4></div>   
 					<div class="menu-item" id="tfconfig">
 					  <ul>
 						<li><label title="show top ranked 20 regulating TFs (if have) for each edge">Show/Hide TF for each path: <input class="checkbox" id="tfcheck" type="checkbox"  onchange="showhideTF(checked)"> </input></label> </li>
@@ -73,6 +75,7 @@
 							<input type="submit" value="Explore TF" onclick="exploretf()">
 							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { exploretf() }">
 							</li>
+				
 
 					  </ul>
 					</div>
@@ -85,7 +88,14 @@
 							<input type="submit" value="Explore DE gene" onclick="explorede()">
 							<input type="text" id="deName" value="" onkeydown="if (event.keyCode == 13) { explorede() }">
 							</li>
-
+						
+						<li>
+							<input type="submit" value="Find DE genes between:" onclick="exploredebetween()"> <br>
+							<div id="node1dropdowndiv">Node1: </div>
+							<div id="node2dropdowndiv">Node2: </div>
+							<!--<label >Node 1: </label><input type="text" id="denode1"><br>-->
+							<!--<label >Node 2: </label><input type="text" id="denode2"> -->
+							</li>
 					  </ul>
 					</div>
 					  
@@ -94,10 +104,13 @@
 						  <ul>
 							<li><label><input type="submit" onclick="downloadfig()" value="Generate Figure:"></label></li>
 							<li><a id="downloadlink"></a></li>
+							<li><label><input type="submit" onclick="downloadjson()" value="Generate Json download file:"></label></li>
+							<li><a id="jsondownloadlink"></a></li>
 							<li><label><input type="submit" onclick="downloadtf()" value="Generate TF download file:"></label></li>
 							<li><a id="tfdownloadlink"></a></li>
 							<li><label><input type="submit" onclick="downloadde()" value="Generate DE download file:"></label></li>
 							<li><a id="dedownloadlink"></a></li>
+							
 					  </ul>
 					  </div>
 					</div>
@@ -112,6 +125,10 @@
 			<div id="scatterdiv"></div>
 			</body>
 	</html>
+	
+
+	
+
 	
 
 	
