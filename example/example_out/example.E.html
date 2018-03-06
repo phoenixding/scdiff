@@ -1,7 +1,6 @@
 
 	
 	
-	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -31,7 +30,7 @@
 		</script>
 		
 	  </head>
-	  <body onload="onload()">
+	  <body onload="javascript:scviz.onload()">
 		  <!-- This DIV contains static visualization configuration config-->
 		  <div id="div_config">
 			  <div class="tf">
@@ -40,16 +39,20 @@
 					<div class="menu-item" id="globalconfig">
 					  <ul>
 						 <li>
-						   <span>Reset: <input type="submit", onclick="resetconfig()" value="RESET"></span><br>
-							  <input type="range" id="zoomsliderbar" value="50" min="0" max="100" onchange="zoom(this.value)"></input>
+						   <span>Reset: <input type="submit", onclick="scviz.config.resetconfig('zoomsliderbar','bgcolor')" value="RESET"></span><br>
+							  <input type="range" id="zoomsliderbar" value="50" min="0" max="100" onchange="scviz.config.zoom('zoomsliderbar',this.value)"></input>
 							  <span id="zoomslider">50</span>
 							</li>
 						 <li>
 							 <label title="Enable/Disable the piechart visualization on mouseover">Enable/Disable tooltip:<input class="checkbox" id="tooltipcheck" type="checkbox"  checked> </input></label>
 							 </li>
 						 <li>
-								<input type="submit" onclick="setbgcolor()" value="Set Background" title="change/set the background color the figure"><a href="http://www.w3schools.com/colors/colors_picker.asp" target="_blank"> color references</a><br>
-								<input type="text" id="bgcolor" value="#333333">	
+								<input type="submit" onclick="scviz.config.setbgcolor('bgcolor')" value="Set Background Color" title="change/set the background color the figure">
+								<input type="color" id="bgcolor" value="#333333"><br>
+								<input type="submit" onclick="scviz.config.settextcolor('textcolor')" value="Set Text Color" title="change/set the color of the text">
+								<input type="color" id="textcolor" value="#ffffff"><br>
+								<input type="submit" onclick="scviz.config.setpathcolor('pathcolor')" value="Set Edge Color" title="change/set the color of the edge">
+								<input type="color" id="pathcolor" value="#ffffff">
 							</li>
 					  </ul>
 					</div>
@@ -58,11 +61,15 @@
 					<div class="menu-item" id="cellplot">
 					  <ul>
 						<li>
-							<input type="submit" value="Plot Cells" onclick="vizCells()">
+							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'>
 							<input type="radio" name="viztype" value="tsne" id="viztypet" checked> T-SNE
 							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA <br>
 							</li>
-
+						<!--<form action="/cgi-bin/colorCells.py" target="/cgi-bin/images/">
+							<input type="submit" value="ColorCellsByGene" >
+							<input type="text" name="cellGeneName" value="">
+							</form>
+							-->
 					  </ul>
 					</div>
 					
@@ -70,47 +77,53 @@
 					<div class="menu-item"><h4><a onclick="fold('tfconfig')">TF CONFIG</a></h4></div>   
 					<div class="menu-item" id="tfconfig">
 					  <ul>
-						<li><label title="show top ranked 20 regulating TFs (if have) for each edge">Show/Hide TF for each path: <input class="checkbox" id="tfcheck" type="checkbox"  onchange="showhideTF(checked)"> </input></label> </li>
+						<li><label title="show top ranked 20 regulating TFs (if have) for each edge">Show/Hide TF for each path: <input class="checkbox" id="tfcheck" type="checkbox"  onchange="scviz.explore.showhideTF(checked)"> </input></label> </li>
 						<li>
-							<input type="submit" value="Explore TF" onclick="exploretf()">
-							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { exploretf() }">
+							<input type="submit" value="Explore TF" onclick="scviz.explore.exploretf('tfName')">
+							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { scviz.explore.exploretf('tfName') }">
 							</li>
-				
-
+						<!--
+						<li><label title="show top ranked 20 regulating RTFs (if have) for each edge">Show/Hide RTF for each path: <input class="checkbox" id="rtfcheck" type="checkbox"  onchange="scviz.explore.showhideRTF(checked)"> </input></label> </li>
+						<li>
+							<input type="submit" value="Explore RTF" onclick="scviz.explore.explorertf('rtfName')">
+							<input type="text" id="rtfName" value="" onkeydown="if (event.keyCode == 13) {scviz.explore.explorertf('rtfName') }">
+							</li>
+							-->
+					
 					  </ul>
 					</div>
 					  
 					<div class="menu-item"><h4><a onclick="fold('geneconfig')">GENE CONFIG</a></h4></div>  
 					<div class="menu-item" id="geneconfig">
 					  <ul>
-						<li><label title="show top ranked 20 (both up and down regulated differentially expressed genes for each edge)">Show/Hide DE genes for each path:<input class="checkbox" id="genecheck" type="checkbox"  onchange="showhideDE(checked)"> </input></label></li>
+						<li><label title="show top ranked 20 (both up and down regulated differentially expressed genes for each edge)">Show/Hide DE genes for each path:<input class="checkbox" id="genecheck" type="checkbox"  onchange="scviz.explore.showhideDE(checked)"> </input></label></li>
 						<li>
-							<input type="submit" value="Explore DE gene" onclick="explorede()">
-							<input type="text" id="deName" value="" onkeydown="if (event.keyCode == 13) { explorede() }">
+							<input type="submit" value="Explore DE gene" onclick="scviz.explore.explorede('deName')">
+							<input type="text" id="deName" value="" onkeydown="if (event.keyCode == 13) { scviz.explore.explorede('deName') }">
 							</li>
 						
 						<li>
-							<input type="submit" value="Find DE genes between:" onclick="exploredebetween()"> <br>
+							<input type="submit" value="Find DE genes between:" onclick="scviz.explore.exploredebetween('node1dropdowndiv','node2dropdowndiv')"> <br>
 							<div id="node1dropdowndiv">Node1: </div>
 							<div id="node2dropdowndiv">Node2: </div>
 							<!--<label >Node 1: </label><input type="text" id="denode1"><br>-->
 							<!--<label >Node 2: </label><input type="text" id="denode2"> -->
 							</li>
+						
 					  </ul>
 					</div>
 					  
 					<div class="menu-item"><h4><a onclick="fold('downloadconfig')">DOWNLOAD</a></h4></div>  
 						<div class="menu-item" id="downloadconfig">
 						  <ul>
-							<li><label><input type="submit" onclick="downloadfig()" value="Generate Figure:"></label></li>
+							<li><label><input type="submit" onclick="scviz.download.downloadfig('downloadlink')" value="Generate Figure:"></label></li>
 							<li><a id="downloadlink"></a></li>
-							<li><label><input type="submit" onclick="downloadjson()" value="Generate Json download file:"></label></li>
+							<li><label><input type="submit" onclick="scviz.download.downloadjson('jsondownloadlink')" value="Generate Json download file:"></label></li>
 							<li><a id="jsondownloadlink"></a></li>
-							<li><label><input type="submit" onclick="downloadtf()" value="Generate TF download file:"></label></li>
+							<li><label><input type="submit" onclick="scviz.download.downloadtf('tfdownloadlink')" value="Generate TF download file:"></label></li>
 							<li><a id="tfdownloadlink"></a></li>
-							<li><label><input type="submit" onclick="downloadde()" value="Generate DE download file:"></label></li>
+							<li><label><input type="submit" onclick="scviz.download.downloadde('dedownloadlink')" value="Generate DE download file:"></label></li>
 							<li><a id="dedownloadlink"></a></li>
-							
 					  </ul>
 					  </div>
 					</div>
@@ -122,13 +135,13 @@
 		  </div>
 		  <!-- This DIV contains dynamic data-driven svg elements -->
 			<div id="div_svg"> </div>
-			<div id="scatterdiv"></div>
-			</body>
+		</body>
 	</html>
 	
 
 	
 
+	
 	
 
 	

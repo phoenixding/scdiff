@@ -330,7 +330,7 @@ $ scdiff -i example.E -t example.tf_dna -k auto -o example_out
 	HNF1A	C11ORF35	0.9
 	EGR3	C11ORF35	0.9
 	```
-The TF-DNA directory provides the TF-DNA interaction file used in this study. 
+The TF-DNA directory provides the TF-DNA interaction file used in this study.
 * **-k/--clusters**:  
 This specifies the clustering parameter (String). It's need to be either 'auto' or  path to the 'config' file.
 Here, 'auto' denotes the clustering parameters will be learned automatically. 

@@ -122,20 +122,21 @@
 	  
 	}
 	#globalconfig.menu-item ul{
-		height:173px;
+		height:203px;
 	}
-	#downloadconfig.menu-item  ul{
-		height:200px;
-	}
-	
-	#geneconfig.menu-item ul{
-		height:160px;
+	#downloadconfig.menu-item ul{
+		height:240px;
 	}
 	
 	#cellplot.menu-item  ul{
-		height:60px;
+		height:100px;
 	}
-
+	#tfconfig.menu-item ul{
+		height:140px;
+	}
+	#geneconfig.menu-item ul{
+		height:160px;
+	}
 
 	/*li Styles*/
 
@@ -189,5 +190,6 @@
 	.axis{
 		color: red;
 	}
+	
 	
 	
