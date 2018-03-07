@@ -211,7 +211,7 @@ The slider resizes the visualization.
 	* **Explore  TF** : highlight the regulating paths for given TF; show the expression profile of the input TF and the average fold change of the TF targets.  
 
 * **GENE CONFIG**:  
-	* **Show/Hide DE **: display/hide the differentially expressed genes for each edge.  
+	* **Show/Hide DE**: display/hide the differentially expressed genes for each edge.  
 	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
 	* **Find DE genes between** : find the differentially expressed genes between two specified nodes. Use the dropdown menu to specify two nodes for comparison. 
 
