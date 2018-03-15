@@ -553,28 +553,28 @@ class Cluster:
 		#-------------------------------------------------------------------
 
 class Path:
-        def __init__(self,fromNode,toNode,Nodes,dTD,dTG,dMb):
+        def __init__(self,fromNode,toNode,Nodes,dTD,dTG,dMb,fChangeCut=1.5):
                 self.fromNode=fromNode                                                  # from Node
                 self.toNode=toNode                                                      # to Node
                 self.AllNodes=Nodes
                 self.GL=fromNode.GL
-			
-                self.diffF=[item[0] for item in self.getDiffGene(FCUT=1.5)]                     # get differnetial genes based on fold change (log2 fold change 1.5)
-                self.diffF_loose=[item[0] for item in self.getDiffGene(FCUT=0.6)]               # get differential genes based on fold change (used loose cutof, log2 fold change >0.6, about 1.5)
+           
+				
+                self.diffF=[item[0] for item in self.getDiffGene(FCUT=fChangeCut)]      # get differnetial genes based on fold change (log2 fold change 1.5)
                 self.diffT=[item[0] for item in self.getDiffGeneTTest()]                # get differential genes based on t-test
                 self.diffG=[item for item in self.diffF if item in self.diffT]          # get differnetial genes based on fold change and student t-test
-                self.diffG_loose=[item for item in self.diffF_loose if item in self.diffT]
                 self.FC=self.getFC()                                                    # fold change
-
+		
+		#pdb.set_trace()
                 [self.etf,self.dtf]=self.getetf(dTD,dTG,dMb)                                       # transcription factors and diff TFs
                 self.atf=self.getActiveTF(dTD,dTG,dMb)                                             # TF targets are significantly different between fromNode and toNode
 
 		#---------------------------------------------------------------------- 
-                self.B=self.getTransition(2,-2,dTD,dTG,dMb)                             # transition offset
+                self.B=self.getTransition(2,-2,dTD,dTG,dMb,fChangeCut)                  # transition offset
                 self.Q=self.getProcessVariance(MU=self.fromNode.E)                      # initial process variance
 
-                self.fulltext = '' # for drawing purpose
-                self.showtext = '' # for drawing purpose
+                #self.fulltext = '' # for drawing purpose
+                #self.showtext = '' # for drawing purpose
 
         #-------------------------------------------------------------------
         # calculate fold change between fromNode (cluster) and toNode (cluster)
@@ -597,6 +597,7 @@ class Path:
         def getDiffGene(self,FCUT):
                 #FCUT=1.5
                 FC=self.getFC()
+                #pdb.set_trace()
                 DG=[item for item in FC if abs(item[1])>FCUT]
                 return DG
 
@@ -645,7 +646,7 @@ class Path:
                                 pvi=1-pbinom(Ti-1,n,pr)
                                 if pvi<pcut:
                                         entf.append([pvi,i])
-                        
+                        """
                         # if fold change cutoff is too stringent, try the loose one (log2FC=0.6, FC=1.5) instead. 
                         if len(entf)<5:
                                 dMi = batchScanPrior([item.upper() for item in self.diffG_loose], dTD)
@@ -661,6 +662,7 @@ class Path:
                                         pvi = 1 - pbinom(Ti - 1, n, pr)
                                         if pvi < pcut:
                                                 entf.append([pvi, i])
+                         """
 			#pdb.set_trace()                     
                         entf.sort()
                         return entf
@@ -700,10 +702,10 @@ class Path:
 
         #-------------------------------------------------------------------
         # regresion model for each path
-        def getTransition(self,U,D,dTD,dTG,dMb):
+        def getTransition(self,U,D,dTD,dTG,dMb,FCUT=1.5):
                 G = self.getFC()
                 dFC = {item[0].upper(): item[1] for item in G}
-                FCUT = 1.5
+                #FCUT = 1.5
                 etfID = [item[1] for item in self.etf]
                 [X, Y] = buildTrain(G, dTG, etfID,self.GL)
                 LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
@@ -757,11 +759,13 @@ class Path:
                 return Q
 
 class Graph:
-	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None):
+	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1.5):
 		self.Cells=Cells
 		self.largeType=largeType
 		self.dsync=dsync
 		self.virtualAncestor=virtualAncestor
+		self.fChangeCut=fChangeCut
+		
 		
 		#Current mode requires an ancestor node (only 1 cluster). If this is not case, virtual ancestor node is needed (The mean expression of the first time point)
 		if (virtualAncestor=='True' or virtualAncestor=='1'):
@@ -783,7 +787,7 @@ class Graph:
 		#---------------------------------------------------------------------------------
 
 		self.connectNodes()  # find connecting relationship between nodes
-		self.getNodePR()  # calculate the probability of Node
+		self.getNodePR()     # calculate the probability of Node
 		#pdb.set_trace()
 		self.Edges = self.buildEdges()  # build edges based on nodes
 		self.Paths = self.buildPaths()  # build paths based on edges
@@ -1006,7 +1010,7 @@ class Graph:
 		P = []
 		for i in self.Nodes:
 			if i.P:
-				p1 = Path(i.P, i,self.Nodes,self.dTD,self.dTG,self.dMb)
+				p1 = Path(i.P, i,self.Nodes,self.dTD,self.dTG,self.dMb,self.fChangeCut)
 				P.append(p1)
 		return P
 
@@ -1505,6 +1509,8 @@ def  main():
 	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, By default, scidff uses the first time point as the ancestor for all following time points. ' +
                                                                          'It is recommended to use this option if users believe that the cells at the first time points are already well differentiated and there ' +
                                                                          'exits at least 2 clusters/sub-types at the first time point. To enable this option, set it as 1.')
+	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1.5, help='Float, Optional, By default, scdiff uses log2 Fold change 1.5(~2^1.5=2.8) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
+											   'However, users are allowed to customize the cutoff based on their application scenario (e.g. log2 fold change 1.0).')
 	args=parser.parse_args()
 
 	scg=args.input
@@ -1515,6 +1521,11 @@ def  main():
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
 	
+	try:
+		fChangeCut=float(args.log2foldchangecut)
+	except:
+		print("Error! log2foldchangecut (-f) must be a float, please check your input.")
+		sys.exit(0)
 		
 	#pdb.set_trace()
 	#-----------------------------------------------------------------------
@@ -1557,7 +1568,7 @@ def  main():
 			sys.exit(0)
 	#=======================================================================
 	# 3): Clustering starts here!
-	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor)
+	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor,fChangeCut)
 
 	#========================================================================
 	#drawing graphs

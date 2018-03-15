@@ -1,6 +1,5 @@
 
 	
-	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -61,9 +60,10 @@
 					<div class="menu-item" id="cellplot">
 					  <ul>
 						<li>
-							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'>
+							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'> <br>
 							<input type="radio" name="viztype" value="tsne" id="viztypet" checked> T-SNE
-							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA <br>
+							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA 
+							<input type="radio" name="viztype" value="isomap" id="viztypem">  ISOMAP <br>
 							</li>
 						<!--<form action="/cgi-bin/colorCells.py" target="/cgi-bin/images/">
 							<input type="submit" value="ColorCellsByGene" >
@@ -137,11 +137,6 @@
 			<div id="div_svg"> </div>
 		</body>
 	</html>
-	
-
-	
-
-	
 	
 
 	

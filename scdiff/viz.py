@@ -3,19 +3,29 @@
 import pdb,sys,os,json
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
+from sklearn.manifold import Isomap
 
 #-----------------------------------------------------------------------
 # export data ==>json
 def GtoJson(G1,GL,dTD):
 	#pdb.set_trace()
 	xmatrix=[(item.__dict__)["E"] for item in G1.Cells]
+	
+	# pca
 	pca=PCA(n_components=50)
 	pca2=PCA(n_components=2)
 	#pdb.set_trace()
+	
+	# tsne
 	xpca2_matrix=pca2.fit_transform(xmatrix)
 	xpca_matrix=pca.fit_transform(xmatrix)
 	tnse=TSNE(n_components=2)
 	xtsne_matrix=tnse.fit_transform(xpca_matrix)
+	
+	# isomap
+	isomap=Isomap(n_components=2)
+	isomap_matrix=isomap.fit_transform(xmatrix)
+	
 	#pdb.set_trace()
 	
 	CL=[]
@@ -23,10 +33,13 @@ def GtoJson(G1,GL,dTD):
 		jci=(G1.Cells[i]).__dict__
 		ixtsne=xtsne_matrix[i]
 		ixpca=xpca2_matrix[i]
+		ixisomap=isomap_matrix[i]
+		
 		jci={item:jci[item] for item in ["ID","T","typeLabel"]}
 		jci["TE"]=list(ixtsne)
 		jci["PE"]=list(ixpca)
-		#pdb.set_trace()
+		jci["IE"]=list(ixisomap)
+		
 		CL.append(jci)
 			
 	NL=[]
@@ -279,7 +292,6 @@ def viz(scg_name,G1,output):
 	# HTML template
 	HTML_template="""
 	
-	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -340,9 +352,10 @@ def viz(scg_name,G1,output):
 					<div class="menu-item" id="cellplot">
 					  <ul>
 						<li>
-							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'>
+							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'> <br>
 							<input type="radio" name="viztype" value="tsne" id="viztypet" checked> T-SNE
-							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA <br>
+							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA 
+							<input type="radio" name="viztype" value="isomap" id="viztypem">  ISOMAP <br>
 							</li>
 						<!--<form action="/cgi-bin/colorCells.py" target="/cgi-bin/images/">
 							<input type="submit" value="ColorCellsByGene" >
@@ -418,16 +431,14 @@ def viz(scg_name,G1,output):
 	</html>
 	
 
-	
-
-	
-	
-
 	"""
 
 	#-----------------------------------------------------------------------
 	# javascript
 	javascript="""
+
+
+
 (function(scviz, $, undefined){
 	//global parameters
 	textfontsize=11;
@@ -459,7 +470,8 @@ def viz(scg_name,G1,output):
 	
 	// visualize all the cells in 2D space projected by t-sne and pca
 	scviz.vizCells=function(viztypep){
-		var plotType=document.getElementById(viztypep).checked;
+		//var plotType=document.getElementById(viztypep).checked;
+		var plotType=$("input[name=viztype]:checked").val();
 		var xData=[];
 		var xLabels=[];
 		var xTypeLabels=[];
@@ -468,9 +480,11 @@ def viz(scg_name,G1,output):
 			var inode_cells=inode["CELL"];
 			var inode_cells=inode_cells.map(function(d){return cells[d]});
 			for (var cell of inode_cells){
-				if (plotType){
+				if (plotType=="pca"){
 					xData.push(cell.PE);
-				}else{
+				}else if (plotType=="isomap"){
+					xData.push(cell.IE);
+				}else {
 					xData.push(cell.TE);
 				}
 				xLabels.push(inode_id);
@@ -703,7 +717,9 @@ def viz(scg_name,G1,output):
 		createEdgeTF();
 		
 		//create RTF display svg text
-		//createRTFs();
+		if (nodes[0].rTF!=undefined){
+			createRTFs();
+		}
 		
 		//create DE display SVG text
 		createDE();
@@ -944,7 +960,7 @@ def viz(scg_name,G1,output):
 				plottf(deinput);
 			}
 			//alert("explore de");
-		},
+		},			
 		//public hanlde exploredebetween
 		exploredebetween: function(node1dropdownid,node2dropdownid){
 			//var xdenode1=d3.select("#denode1").property("value").toUpperCase();
@@ -974,22 +990,29 @@ def viz(scg_name,G1,output):
 			}
 			
 			var DEGList=[]
-			var topcut=100;
+			var decut=0.6;
+			var topcut=800;
 			for (var gi in node1.E){
 				var fc=node2.E[gi]-node1.E[gi];
 				fc=fc.toFixed(3);
-				DEGList.push([GL[gi],fc]);	
+				if (Math.abs(fc)>decut){
+					DEGList.push([GL[gi],node1.E[gi].toFixed(3),node2.E[gi].toFixed(3),fc]);	
+				}
 			} 
 			DEGList.sort(function(a,b){
-				return b[1]-a[1];
+				return b[3]-a[3];
 			});
 			var upList=DEGList.slice(0,topcut);
+			var upList=upList.filter(function(d){return d[3]>0});
+			upList.unshift(["Gene","E"+node1.T+"_"+node1.ID,"E"+node2.T+"_"+node2.ID,"log2 fold change"]);
+			
 			
 			DEGList.sort(function(a,b){
-				return a[1]-b[1];
+				return a[3]-b[3];
 			});
 			var downList=DEGList.slice(0,topcut);
-			
+			var downList=downList.filter(function(d){return d[3]<0});
+			downList.unshift(["Gene","E"+node1.T+"_"+node1.ID,"E"+node2.T+"_"+node2.ID,"log2 fold change"]);
 			
 			//create table for DEG between 2 given ndoes
 			//console.log(DEGList);
@@ -1011,33 +1034,70 @@ def viz(scg_name,G1,output):
 		
 			tdiv
 			.append("p")
-			.text("Table Differentially expressed genes (UP-regulated) between : "+xdenode1+" and "+xdenode2);
-					
-			createTable(tdiv,"deg_between",upList);
+			.text("Table: Differentially expressed genes (UP-regulated) between : "+xdenode1+" and "+xdenode2);
+			
+			var species="MOUSE"
+			//add GO analysis
+			tdiv
+			.append("button")
+			.text("functional analysis")
+			.on("click",function(){
+				if (d3.event.shiftKey){
+					toppgenegoInput(upList.map(function(d){return d[0];}));
+				}else{
+					panthergoInput(upList.map(function(d){return d[0];}), species);
+				}
+			});
+				
+			//add download link
 			tdiv.append("button")
 			.text("click to create the excel table")
 			.on("click",function(){
 					table2XLS(newW,"deg_between","degupdlink");
 				});
-				
+			
 			tdiv.append("a")
 			.attr("href","#")
 			.attr("id","degupdlink");
 			
+			tdiv.append("p");
+			//add table main body		
+			createTable(tdiv,"deg_between",upList);
+			
+			
+			
 			tdiv
 			.append("p")
-			.text("Table Differentially expressed genes (Down-regulated) between : "+xdenode1+" and "+xdenode2);
-					
-			createTable(tdiv,"deg_between",downList);
+			.text("Table: Differentially expressed genes (Down-regulated) between : "+xdenode1+" and "+xdenode2);
+			
+			//add GO analysis
+			tdiv
+			.append("button")
+			.text("functional analysis")
+			.on("click",function(){
+				if (d3.event.shiftKey){
+					toppgenegoInput(downList.map(function(d){return d[0];}));
+				}else{
+					panthergoInput(downList.map(function(d){return d[0];}), species);
+				}
+			});
+			
+			//add download link
 			tdiv.append("button")
 			.text("click to create the excel table")
 			.on("click",function(){
 					table2XLS(newW,"deg_between","degdowndlink");
 				});
-				
+			
 			tdiv.append("a")
 			.attr("href","#")
 			.attr("id","degdowndlink");
+			
+			tdiv.append("p");
+			createTable(tdiv,"deg_between",downList);
+			
+				
+			
 			
 		},
 		
@@ -1277,13 +1337,34 @@ def viz(scg_name,G1,output):
 		cnode=this.__data__;
 		pnode=cnode.parent;
 		var resDEList=[]; //DE details
-		resDEList.push(["DE gene","Expression_E"+pnode.T+"_"+pnode.ID,"Expression_"+cnode.T+"_"+cnode.ID,"Fold change","edgeID"]);
-
-		var resDEList=exportDEEdge(resDEList,chosenEdge);
-		tdiv.append("p")
-		.text("Table 3. DE gene details for edge ending at selected node:"+cnode.T+"_"+cnode.ID)
+		//resDEList.push(["DE gene","Expression_E"+pnode.T+"_"+pnode.ID,"Expression_"+cnode.T+"_"+cnode.ID,"Fold change","edgeID"]);
 		
-		createTable(tdiv,"detable",resDEList);
+		var resDEList=exportDEEdge(resDEList,chosenEdge);
+		
+		
+		var species="MOUSE"
+		var functionalCut=800;
+		
+		// up-regulated 
+		tdiv.append("p")
+		.text("Table 3. DE gene (up-regulated) details for edge ending at selected node:"+cnode.T+"_"+cnode.ID)
+	
+		var upresDEList=resDEList.filter(function(d){
+			if (d[3]>0){
+				return true;
+			} return false;
+		});
+		createTable(tdiv,"detable",upresDEList);
+		tdiv.append("button")
+		.text("functional analysis")
+		.on("click",function(){
+			if (d3.event.shiftKey){
+					toppgenegoInput(upresDEList.slice(0,functionalCut).map(function(d){return d[0];}));
+				}else{
+					panthergoInput(upresDEList.slice(0,functionalCut).map(function(d){return d[0];}), species);
+				}
+		});
+		
 		tdiv.append("button")
 		.text("click to create the excel table")
 		.on("click",function(){
@@ -1292,6 +1373,37 @@ def viz(scg_name,G1,output):
 		tdiv.append("a")
 		.attr("href","#")
 		.attr("id","dedlink");
+		
+		
+		// down-regulated
+		
+		tdiv.append("p")
+		.text("Table 4. DE gene (down-regulated) details for edge ending at selected node:"+cnode.T+"_"+cnode.ID)
+		
+		var downresDEList=resDEList.filter(function(d){
+			if (d[3]<=0){
+				return true;
+			} return false;
+		});
+		createTable(tdiv,"detable",downresDEList);
+		tdiv.append("button")
+		.text("functional analysis")
+		.on("click",function(){
+			if (d3.event.shiftKey){
+					toppgenegoInput(downresDEList.slice(0,functionalCut).map(function(d){return d[0];}));
+				}else{
+					panthergoInput(downresDEList.slice(0,functionalCut).map(function(d){return d[0];}), species);
+				}
+		});
+		
+		tdiv.append("button")
+		.text("click to create the excel table")
+		.on("click",function(){
+				table2XLS(newW,"ddetable","ddedlink");
+			});
+		tdiv.append("a")
+		.attr("href","#")
+		.attr("id","ddedlink");
 		
 		//loading complete
 		newW.document.title="loading complete";
@@ -2180,6 +2292,34 @@ def viz(scg_name,G1,output):
 		newW.document.getElementById(dlink).innerHTML="Table ready!click to save! (please add the right file extension .xls if not prompted)"
 	}
 	
+	// panther go analysis
+	function panthergoInput(keys,species){
+		var link_pre="http://pantherdb.org/webservices/go/overrep.jsp?input=";
+		if (species==undefined){
+			var link_suffix="&species=MOUSE";
+		}else{
+			var link_suffix="&species="+species;
+		}
+		
+		keys=keys.join("\\n");
+		key=encodeURIComponent(keys);
+		var link=link_pre+keys+link_suffix;
+		link=encodeURI(link);
+		var ww=open(link,'_blank','height=600,width=800,left=1200,top=200,scrollbars=yes');
+	}
+	
+	// toppgene go analysis 
+	function toppgenegoInput(keys){
+		var link_pre="https://toppgene.cchmc.org/CheckInput.action?query=TOPPFUN&type=HGNC_SYNONYMS&training_set="
+		var link_suffix="";
+		keys=keys.join("+");
+		key=encodeURIComponent(keys);
+		var link=link_pre+keys+link_suffix;
+		link=encodeURI(link);
+		open(link,'_blank','height=600,width=800,left=1200,top=200,scrollbars=yes');
+	}
+	
+	// colors
 	function getColors(){
 			var colorObject={
 		  "red": "#ff0000",
@@ -2337,6 +2477,7 @@ def viz(scg_name,G1,output):
 	
 }(window.scviz =window.scviz ||{}, jQuery));
 	
+
 	"""
 	#-----------------------------------------------------------------------
 	

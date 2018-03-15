@@ -66,44 +66,43 @@ $sudo pip install --upgrade https://github.com/phoenixding/scdiff/zipball/master
 usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l LargeType] 
                    [-d DSYNC][-a VIRTUALANCESTOR]
 
-  -h, --help            show this help message and exit
-  
-  -i INPUT, --input INPUT, required 
-                        input single cell RNA-seq expression data
-                        
-  -t TF_DNA, --tf_dna TF_DNA, required
-                        TF-DNA interactions used in the analysis
-                        
-  -k CLUSTERS, --clusters CLUSTERS, required
-                        how to learn the number of clusters for each time
-                        point? user-defined or auto? if user-defined, please
-                        specify the configuration file path. If set as "auto"
-                        scdiff will learn the parameters automatically.
-                        
-  -o OUTPUT, --output OUTPUT, required
-                        output folder to store all results
-                        
-  -s SPEEDUP, --speedup SPEEDUP(1/None), optional
-                        If set as 'True' or '1', SCIDFF will speedup the running
-                        by reducing the iteration times.
-                        (use less stringent convergence criteria).
-                        
-  -l LARGETYPE,  --largetype LARGETYPE (1/None), optional
+	-h, --help            show this help message and exit
+
+	-i INPUT, --input INPUT, required 
+						input single cell RNA-seq expression data
+						
+	-t TF_DNA, --tf_dna TF_DNA, required
+						TF-DNA interactions used in the analysis
+						
+	-k CLUSTERS, --clusters CLUSTERS, required
+						how to learn the number of clusters for each time
+						point? user-defined or auto? if user-defined, please
+						specify the configuration file path. If set as "auto"
+						scdiff will learn the parameters automatically.
+						
+	-o OUTPUT, --output OUTPUT, required
+						output folder to store all results
+						
+	-s SPEEDUP, --speedup SPEEDUP(1/None), optional
+						If set as 'True' or '1', SCIDFF will speedup the running
+						by reducing the iteration times.
+						
+	-l LARGETYPE,  --largetype LARGETYPE (1/None), optional
 						if specified as 'True' or '1', scdiff will use LargeType mode to 
 						improve the running efficiency (both memory and time). 
 						As spectral clustering is not scalable to large data,
 						PCA+K-Means clustering was used instead. The running speed is improved 
-						significantly but the performance is relatively worse. If there are
+						significantly but the performance is slightly worse. If there are
 						more than 2k cells at each time point on average, it is highly 
 						recommended to use this parameter to improve time and memory efficiency.
 						
 						
-  -d DSYNC,  --dsync DSYNC (1/None), optional
+	-d DSYNC,  --dsync DSYNC (1/None), optional
 						If specified as 'True' or '1', the cell synchronization will be disabled. 
 						If the users believe that cells at the same time point are similar in terms of 
 						differentiation/development. The synchronization can be disabled.
-  
-  -a VIRTUALANCESTOR, --virtualAncestor VIRTUALANCESTOR (1/None), optional
+
+	-a VIRTUALANCESTOR, --virtualAncestor VIRTUALANCESTOR (1/None), optional
 						scdiff requires a 'Ancestor' node (the starting node, 
 						all other nodes are descendants).  By default, 
 						the 'Ancestor' node is set as the first time point. The hypothesis behind is :  
@@ -113,8 +112,14 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						  
 						If it is not the case, users can set -a as 'True' or '1' to enable
 						a virtual ancestor before the first time point.  The expression of the 
-						virtual ancestor is the median expression of all cells at first time point.   
-						
+						virtual ancestor is the median expression of all cells at first time point. 
+						 
+	-f LOG2FOLDCHANGECUT, --log2foldchangecut LOG2FOLDCHANGECUT (Float), optional
+						By default, scdiff uses log2 Fold change 1.5(~2^1.5=2.8) 
+						as the cutoff for differential genes (together with t-test p-value cutoff 0.05).
+						However, users are allowed to customize the cutoff based on their 
+						application scenario (e.g. log2 fold change 1.0).
+
 						
 ```
 # INPUTS AND PRE-PROCESSING
@@ -201,10 +206,10 @@ The following is the manual for the visualization page.
 **Visualization Config (Left panel)**:
   
 * **RESET**: It restores all configs to default.   
-The slider resizes the visualization. 
+The slider blow resizes the visualization. 
 
 * **CELL PLOTS** :
-	* **Plot Cells**: show PCA/TSNE plots for all cells (use the radio button to select the dimension reduction method : PCA/T-SNE for visualization).
+	* **Plot Cells**: show PCA/TSNE/ISOMAP plots for all cells (use the radio button to select the dimension reduction method : PCA/T-SNE/ISOMAP for visualization).
 
 * **TF CONFIG** :  
 	* **Show/Hide TF** : display/hide the regulating TFs for each path.  
@@ -214,6 +219,7 @@ The slider resizes the visualization.
 	* **Show/Hide DE**: display/hide the differentially expressed genes for each edge.  
 	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
 	* **Find DE genes between** : find the differentially expressed genes between two specified nodes. Use the dropdown menu to specify two nodes for comparison. 
+	On the results page, click the "functional analysis" button to perform a gene enrichment anlayis using PANTHER (or ToppGene by shift+click).
 
 * **Download**: 
 	* **Generate Figure**: download the visualization figure.
@@ -228,6 +234,7 @@ The slider resizes the visualization.
 					// a cell instance
 					"TE": [x0,y0], // cell coordinates in 2D space projected by T-SNE 
 					"PE": [x1,y1], // cell coordinates in 2D space projected by PCA
+					"IE": [x2,y2], // cell coordinates in 2D space projected by ISOMAP
 					"typeLabel": cell Label, // label of the cell if known
 					"ID": cell ID,
 					"T": cell measure time
@@ -271,8 +278,9 @@ The slider resizes the visualization.
 * left click each node to show:
 	* Cell IDs (with labels) within the node. 
 	* Regulating TFs for the edge ending at the node.
-	* DE genes for the edge ending at the node.
 	* Regulating TFs for the whole path ending at the node. 
+	* DE genes for the edge ending at the node.
+	
 	
 # EXAMPLES
  
