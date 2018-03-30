@@ -2176,7 +2176,7 @@ def viz(scg_name,G1,output):
 			for (var g of de){
 				var gindex=GL.indexOf(g);
 				var efrom=pnode.E[gindex];
-				var eto=pnode.E[gindex];
+				var eto=cnode.E[gindex];
 				var fc=eto-efrom;
 				var deresList=[g,efrom,eto,fc,edgeid];
 				resList.push(deresList);
