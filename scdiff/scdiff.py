@@ -639,6 +639,7 @@ class Path:
                         n=len(self.diffG)		# number of diff genes
                         N=len(self.GL)				# N: number of sequences in background (all)
                         entf=[]
+                        #pdb.set_trace()
                         for i in K:
                                 Ti=len(dMi[i])
                                 Tb=len(dMb[i])
@@ -646,23 +647,7 @@ class Path:
                                 pvi=1-pbinom(Ti-1,n,pr)
                                 if pvi<pcut:
                                         entf.append([pvi,i])
-                        """
-                        # if fold change cutoff is too stringent, try the loose one (log2FC=0.6, FC=1.5) instead. 
-                        if len(entf)<5:
-                                dMi = batchScanPrior([item.upper() for item in self.diffG_loose], dTD)
-                                K = [item for item in dMi.keys() if item in dMb.keys()]
-                                K.sort()
-                                n = len(self.diffG_loose)		         # number of diff genes
-                                N = len(self.GL)				# N: number of sequences in background (all)
-                                entf = []
-                                for i in K:
-                                        Ti = len(dMi[i])
-                                        Tb = len(dMb[i])
-                                        pr = float(Tb) / N
-                                        pvi = 1 - pbinom(Ti - 1, n, pr)
-                                        if pvi < pcut:
-                                                entf.append([pvi, i])
-                         """
+                    
 			#pdb.set_trace()                     
                         entf.sort()
                         return entf
@@ -1294,7 +1279,10 @@ def detPeak(K, A, deltaP, type='max'):
 	LM = []
 	LX = []
 	#minA = min(0, min(A))
-	minA=max(0,min(A))
+        if len(A)==0:
+            return []
+
+        minA=max(0,min(A))
 	for i in range(len(A) - 1):
 			delta = deltaP * (A[i] - minA)
 			if i == 0:
@@ -1535,6 +1523,8 @@ def  main():
 	with open(scg,'r') as f:
 		line_ct=0
 		for line in f:
+                        if len(line.strip())==0:
+                            continue
 			if line_ct==0:
 				GL=line.strip().split("\t")[3:]
 			else:
