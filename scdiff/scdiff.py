@@ -1278,11 +1278,9 @@ def detPeak(K, A, deltaP, type='max'):
 	# get Local optimal score
 	LM = []
 	LX = []
-	#minA = min(0, min(A))
-        if len(A)==0:
-            return []
-
-        minA=max(0,min(A))
+	if len(A)==0:
+		return []
+	minA = min(0, min(A))
 	for i in range(len(A) - 1):
 			delta = deltaP * (A[i] - minA)
 			if i == 0:
@@ -1523,8 +1521,9 @@ def  main():
 	with open(scg,'r') as f:
 		line_ct=0
 		for line in f:
-                        if len(line.strip())==0:
-                            continue
+			if (len(line.strip())==0):
+				continue
+				
 			if line_ct==0:
 				GL=line.strip().split("\t")[3:]
 			else:
