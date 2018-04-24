@@ -2,6 +2,10 @@
 
 
 
+
+
+
+
 (function(scviz, $, undefined){
 	//global parameters
 	textfontsize=11;
@@ -2166,6 +2170,8 @@
 
 	
 }(window.scviz =window.scviz ||{}, jQuery));
+	
+
 	
 
 	

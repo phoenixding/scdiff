@@ -867,6 +867,10 @@ class Graph:
 			tr.sort()
 			KET=self.clustering.KET
 			[NCL,NCH]=[len(KET)-2,(len(KET)-1)*2-1]                     # candidates for number of cuts
+			
+			NCL=max(0,len(KET)-1)
+			NCH=int(math.log(len(XX)+1,2))                               # max # of level (determined by the maximal # of binary splits)
+			
 			breakP=[tr[k][1] for k in range(0,NCL)]
 			for i in range(NCL,NCH):
 				if pv[tr[i][1]]<=pvcut or df[tr[i][1]]>=dfcut:
