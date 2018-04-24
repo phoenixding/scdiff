@@ -115,10 +115,10 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						virtual ancestor is the median expression of all cells at first time point. 
 						 
 	-f LOG2FOLDCHANGECUT, --log2foldchangecut LOG2FOLDCHANGECUT (Float), optional
-						By default, scdiff uses log2 Fold change 1.5(~2^1.5=2.8) 
+						By default, scdiff uses log2 Fold change 1(=>2^1=2)
 						as the cutoff for differential genes (together with t-test p-value cutoff 0.05).
 						However, users are allowed to customize the cutoff based on their 
-						application scenario (e.g. log2 fold change 1.0).
+						application scenario (e.g. log2 fold change 1.5). 
 
 						
 ```
@@ -170,7 +170,7 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
 * __-k/--cluster__  
   This specifies the clustering parameter (String).   
   It's need to be either 'auto' or path to the 'config' file. Here, 'auto' denotes the clustering parameters will be learned automatically.  
-  The path to the 'config' file specifies the file with customized initial clustering parameters. This should be used when users have some prior knowledge.  
+  The path to the 'config' file specifies the file with customized initial clustering parameters. This is **highly recommended** when users have some prior knowledge.  
   For example, if we know there are how many sub-populations within each time, 
   we can just directly specify the clustering parameters (K, # of clusters) using the 'config' file.
   Please note that this config file is optional, users can set -k as "auto" and the scdiff will learn the clustering parameters automatically. 

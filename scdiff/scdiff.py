@@ -560,7 +560,7 @@ class Path:
                 self.GL=fromNode.GL
            
 				
-                self.diffF=[item[0] for item in self.getDiffGene(FCUT=fChangeCut)]      # get differnetial genes based on fold change (log2 fold change 1.5)
+                self.diffF=[item[0] for item in self.getDiffGene(FCUT=fChangeCut)]      # get differnetial genes based on fold change 
                 self.diffT=[item[0] for item in self.getDiffGeneTTest()]                # get differential genes based on t-test
                 self.diffG=[item for item in self.diffF if item in self.diffT]          # get differnetial genes based on fold change and student t-test
                 self.FC=self.getFC()                                                    # fold change
@@ -595,7 +595,6 @@ class Path:
 
         # get differential genes between clusters along the path
         def getDiffGene(self,FCUT):
-                #FCUT=1.5
                 FC=self.getFC()
                 #pdb.set_trace()
                 DG=[item for item in FC if abs(item[1])>FCUT]
@@ -687,10 +686,9 @@ class Path:
 
         #-------------------------------------------------------------------
         # regresion model for each path
-        def getTransition(self,U,D,dTD,dTG,dMb,FCUT=1.5):
+        def getTransition(self,U,D,dTD,dTG,dMb,FCUT=1):
                 G = self.getFC()
                 dFC = {item[0].upper(): item[1] for item in G}
-                #FCUT = 1.5
                 etfID = [item[1] for item in self.etf]
                 [X, Y] = buildTrain(G, dTG, etfID,self.GL)
                 LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
@@ -744,7 +742,7 @@ class Path:
                 return Q
 
 class Graph:
-	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1.5):
+	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1):
 		self.Cells=Cells
 		self.largeType=largeType
 		self.dsync=dsync
@@ -1495,8 +1493,8 @@ def  main():
 	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, By default, scidff uses the first time point as the ancestor for all following time points. ' +
                                                                          'It is recommended to use this option if users believe that the cells at the first time points are already well differentiated and there ' +
                                                                          'exits at least 2 clusters/sub-types at the first time point. To enable this option, set it as 1.')
-	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1.5, help='Float, Optional, By default, scdiff uses log2 Fold change 1.5(~2^1.5=2.8) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
-											   'However, users are allowed to customize the cutoff based on their application scenario (e.g. log2 fold change 1.0).')
+	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1, help='Float, Optional, By default, scdiff uses log2 Fold change 1(~2^1=2) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
+											   'However, users are allowed to customize the cutoff based on their application scenario (e.g. log2 fold change 1.5).')
 	args=parser.parse_args()
 
 	scg=args.input
