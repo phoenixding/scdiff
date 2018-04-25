@@ -5,6 +5,8 @@
 import pdb,sys,os,random
 import numpy as np
 np.seterr(divide='ignore', invalid='ignore')
+import warnings
+warnings.filterwarnings("ignore")
 import math
 import copy
 import pickle
@@ -777,7 +779,7 @@ class Graph:
 		self.Paths = self.buildPaths()  # build paths based on edges
 		
 		# get representing TFs for each of the clusters
-		self.adjustRTFs(self.etfile)
+		self.adjustRTFs(self.fChangeCut,self.etfile)
 		
 		#pdb.set_trace()
 		[self.Q, self.R] = self.estimateQR()  # estiamte Q,R for Kalman Filter
@@ -786,7 +788,7 @@ class Graph:
 		
       
       #---------------------------------------------------------------------------------------------------
-	def adjustRTFs(self,tflist=None):
+	def adjustRTFs(self,fcut=1,tflist=None):
 		# get RTFs (representating TFs) based on its own expression for each node (the TF expression is different to both parent and siblings)
 		tflistpath=pkg_resources.resource_filename(__name__,"tfdata/HumanTFList.txt") if tflist==None else tflist
 		
@@ -809,8 +811,8 @@ class Graph:
 				peTFs=[]
 				for j in eTFs:
 					jdex=[item.upper() for item in self.GL].index(j)
-					[jflag1,pvp,fcp]=tellDifference(Node.cells,NodeParentCells,jdex)
-					[jflag2,pvs,fcs]=tellDifference(Node.cells,NodeSibCells,jdex)
+					[jflag1,pvp,fcp]=tellDifference(Node.cells,NodeParentCells,jdex,fcut)
+					[jflag2,pvs,fcs]=tellDifference(Node.cells,NodeSibCells,jdex,fcut)
 					if (jflag1*jflag2>0) or (jflag1!=0 and len(NodeSibCells)==0):
 						peTFs.append([pvp,j,fcp,fcs])
 				peTFs.sort()
@@ -852,7 +854,7 @@ class Graph:
 		self.getNodePR()
 		self.Edges=self.buildEdges()
 		self.Paths=self.buildPaths()
-		self.adjustRTFs(self.etfile)
+		self.adjustRTFs(self.fChangeCut,self.etfile)
 		[self.Q, self.R] = self.estimateQR()
 		self.rEstimateEx()
 		self.rEstimateT()
