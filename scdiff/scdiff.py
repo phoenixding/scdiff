@@ -9,6 +9,7 @@ import math
 import copy
 import pickle
 import argparse
+import functools
 
 # import Statistics modules
 from scipy.stats import spearmanr
@@ -47,6 +48,7 @@ from scipy.spatial.distance import pdist,squareform
 from viz import viz
 
 import gc
+import pkg_resources 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # cell
@@ -370,8 +372,6 @@ class Cluster:
 		self.R=self.getVariance()  # initial observation variance
 		self.mT=None               # initial mean Time
 		self.rT=None               # intial Time variance
-		self.fulltext=''           # full text, description string used for drawing node
-		self.showtext=''           # short text, display on node
 		self.DTA=[]                # distance to ancestor List
 		self.PR=0                  # probability of cluster
 
@@ -553,7 +553,7 @@ class Cluster:
 		#-------------------------------------------------------------------
 
 class Path:
-        def __init__(self,fromNode,toNode,Nodes,dTD,dTG,dMb,fChangeCut=1.5):
+        def __init__(self,fromNode,toNode,Nodes,dTD,dTG,dMb,fChangeCut=1):
                 self.fromNode=fromNode                                                  # from Node
                 self.toNode=toNode                                                      # to Node
                 self.AllNodes=Nodes
@@ -742,12 +742,13 @@ class Path:
                 return Q
 
 class Graph:
-	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1):
+	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1,etfile=None):
 		self.Cells=Cells
 		self.largeType=largeType
 		self.dsync=dsync
 		self.virtualAncestor=virtualAncestor
 		self.fChangeCut=fChangeCut
+		self.etfile=etfile
 		
 		
 		#Current mode requires an ancestor node (only 1 cluster). If this is not case, virtual ancestor node is needed (The mean expression of the first time point)
@@ -774,15 +775,60 @@ class Graph:
 		#pdb.set_trace()
 		self.Edges = self.buildEdges()  # build edges based on nodes
 		self.Paths = self.buildPaths()  # build paths based on edges
+		
+		# get representing TFs for each of the clusters
+		self.adjustRTFs(self.etfile)
+		
 		#pdb.set_trace()
 		[self.Q, self.R] = self.estimateQR()  # estiamte Q,R for Kalman Filter
 		self.rEstimateEx()		# estimate the expression for nodes (clusters) using Kalman Filter
 		self.rEstimateT()		# estimate time for each node (clustering) using Kalman Filter
+		
+      
+      #---------------------------------------------------------------------------------------------------
+	def adjustRTFs(self,tflist=None):
+		# get RTFs (representating TFs) based on its own expression for each node (the TF expression is different to both parent and siblings)
+		tflistpath=pkg_resources.resource_filename(__name__,"tfdata/HumanTFList.txt") if tflist==None else tflist
+		
+		try:
+			with open(tflistpath,'r') as f:
+				TFs=f.readlines()
+				TFs=[item.strip().split()[0] for item in TFs]	
+		except:
+			print("error! Please check your input TF List file")
+			sys.exit(0)
+					
+		eTFs=[item for item in [item.upper() for item in self.GL] if item in TFs]
+		
+		for Node in self.Nodes:
+			if Node.P:
+				NodeParent=Node.P
+				NodeSib=[item for item in Node.P.C if item!=Node]
+				NodeSibCells=[] if NodeSib==[] else functools.reduce(lambda x,y:x+y,[item.cells for item in NodeSib])
+				NodeParentCells=NodeParent.cells
+				peTFs=[]
+				for j in eTFs:
+					jdex=[item.upper() for item in self.GL].index(j)
+					[jflag1,pvp,fcp]=tellDifference(Node.cells,NodeParentCells,jdex)
+					[jflag2,pvs,fcs]=tellDifference(Node.cells,NodeSibCells,jdex)
+					if (jflag1*jflag2>0) or (jflag1!=0 and len(NodeSibCells)==0):
+						peTFs.append([pvp,j,fcp,fcs])
+				peTFs.sort()
+				Node.eTF=peTFs
+			else:
+				Node.eTF=[]
+		   
         #----------------------------------------------------------------------------------
 	
 	def parseTFDNA(self,tfdna):
 		
-		TD=TabFile(tfdna).read('\t') # dictionary to store the TF-DNA info
+		RTD=TabFile(tfdna).read('\t') # dictionary to store the TF-DNA info
+		try:
+			TD=[[item[0].upper(),item[1].upper()] for item in RTD]
+		except:
+			print("check the format of input TF-DNA interaction file")
+			sys.exit(0)
+			
 		[dTD,dTG]=getTFDNAInteraction(TD)
 		# TF binding in all input sequences (background)
 		dMb=batchScanPrior([item.upper() for item in self.GL],dTD)
@@ -806,6 +852,7 @@ class Graph:
 		self.getNodePR()
 		self.Edges=self.buildEdges()
 		self.Paths=self.buildPaths()
+		self.adjustRTFs(self.etfile)
 		[self.Q, self.R] = self.estimateQR()
 		self.rEstimateEx()
 		self.rEstimateT()
@@ -905,7 +952,7 @@ class Graph:
 				st = end
 			CC.append(XX[st:])
 			return CC
-
+			
 		# -------------------------------------------------------------
 		# splitTime main 
 		"""
@@ -1205,6 +1252,21 @@ class Graph:
 #=======================================================================
 # global functions
 
+
+def tellDifference(nodeCells,nodePCells,geneIndex,fcut=0.6):
+	if len(nodePCells)==0:
+		return [0,1,0]
+	X=[item.E[geneIndex] for item in nodeCells]
+	Y=[item.E[geneIndex] for item in nodePCells]
+	fc=sum(X)/len(X)-sum(Y)/len(Y)
+	pv=ttest_ind(X,Y)[1]
+	
+	pcut=0.05
+	if pv<pcut and fc>fcut:
+		return [1,pv,fc]
+	if pv<pcut and fc<-1*fcut:
+		return [-1,pv,fc]	
+	return [0,pv,fc]
 #-----------------------------------------------------------------------------
 # filter X
 def filterG(X,GL):
@@ -1315,6 +1377,7 @@ def getTFDNAInteraction(TD):
 					dTD[i[0]] = [i[1]]
 			else:
 					dTD[i[0]].append(i[1])
+					
 			if i[1] not in dTG:
 					dTG[i[1]] = [i[0]]
 			else:
@@ -1497,8 +1560,12 @@ def  main():
 	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, By default, scidff uses the first time point as the ancestor for all following time points. ' +
                                                                          'It is recommended to use this option if users believe that the cells at the first time points are already well differentiated and there ' +
                                                                          'exits at least 2 clusters/sub-types at the first time point. To enable this option, set it as 1.')
-	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1, help='Float, Optional, By default, scdiff uses log2 Fold change 1(~2^1=2) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
+	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1, help='Float, Optional, by default, scdiff uses log2 Fold change 1(~2^1=2) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
 											   'However, users are allowed to customize the cutoff based on their application scenario (e.g. log2 fold change 1.5).')
+	
+	parser.add_argument("-e",'--etfListFile',required=False,help='String, Optional, by default, scdiff recognizes 1.6k TFs (we collected in human and mouse).  Users are able to provide a customized list of TFs instead using this option. '+
+												'It specifies the path to the TF list file, in which each line is a TF name.')
+	
 	args=parser.parse_args()
 
 	scg=args.input
@@ -1508,6 +1575,9 @@ def  main():
 	largeType=args.large
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
+	etf=args.etfListFile
+	
+	#pdb.set_trace()
 	
 	try:
 		fChangeCut=float(args.log2foldchangecut)
@@ -1559,7 +1629,7 @@ def  main():
 			sys.exit(0)
 	#=======================================================================
 	# 3): Clustering starts here!
-	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor,fChangeCut)
+	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor,fChangeCut,etf)
 
 	#========================================================================
 	#drawing graphs

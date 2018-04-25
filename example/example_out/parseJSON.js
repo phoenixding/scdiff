@@ -1,11 +1,5 @@
 
 
-
-
-
-
-
-
 (function(scviz, $, undefined){
 	//global parameters
 	textfontsize=11;
@@ -284,7 +278,7 @@
 		createEdgeTF();
 		
 		//create RTF display svg text
-		if (nodes[0].rTF!=undefined){
+		if (nodes[0].eTF!=undefined){
 			createRTFs();
 		}
 		
@@ -441,7 +435,7 @@
 			var tnodeList=[];
 			var etfList=[];
 			for (var edge of edges){
-				var rtf=nodes[edge.to].rTF
+				var rtf=nodes[edge.to].eTF
 				rtf=rtf.slice(0,searchCut);
 				var rtfList=rtf.map(function(d){return d[1].toUpperCase();});
 				if (rtfList.indexOf(rtfinput)!=-1){
@@ -631,8 +625,6 @@
 			//add table main body		
 			createTable(tdiv,"deg_between",upList);
 			
-			
-			
 			tdiv
 			.append("p")
 			.text("Table: Differentially expressed genes (Down-regulated) between : "+xdenode1+" and "+xdenode2);
@@ -782,7 +774,7 @@
 				
 				
 			}
-			scviz.plots.barplot(nodeIDList,nodeValueList,"Average targets fold change of "+tfinput+"(only considered differential targets, the fold change is calculated along the edge ending at given node)",500);
+			scviz.plots.barplot(nodeIDList,nodeValueList,"Average targets log2 fold change of "+tfinput+"(only considered differential targets, the log2 fold change is calculated along the edge ending at given node)",500);
 			//console.log(targets);
 		}
 	}
@@ -840,13 +832,13 @@
 		}
 		
 		var resList=[]; //TF details
-		resList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
+		resList.push(["TF","p-value","TF log2 fold change","Mean target log2 fold change","Mean DE target log2 fold change","edgeID"]);
 
 		resList=exportTFEdge(resList,chosenEdge);
 		
 		tdiv
 		.append("p")
-		.text("Table 1. TF details for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
+		.text("Table 1. TFs(Predicted using the expression of the TF targets) for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		
 		createTable(tdiv,"tftable",resList);
@@ -863,6 +855,8 @@
 		
 		////TF details for path ending at selected node
 		cnode=this.__data__;
+		
+		/*
 		pnode=cnode.parent;
 		var chosenPath=[]
 		
@@ -872,20 +866,20 @@
 			pnode=pnode.parent;
 			chosenPath.push(ec);
 		}
+		*/
 		
-
+		
 		var AllTFList=[];
-		AllTFList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
-
-		for (var cedge of chosenPath){
-			AllTFList=exportTFEdge(AllTFList,JSON.parse(JSON.stringify(cedge)));
-			
+		AllTFList.push(["TF","p-value","log2 fold change to parent","log2 fold change to siblings ","edgeID"]);
+		
+		for (var etf of cnode.eTF){
+			AllTFList.push([etf[1],etf[0].toExponential(2),etf[2].toFixed(2),etf[3].toFixed(2),'E'+pnode.T+"_"+pnode.ID+"->E"+cnode.T+"_"+cnode.ID])
 		}
-
+	
 		AllTFList.sort(function(a,b){return a[1]-b[1];});
 		tdiv
 		.append("p")
-		.text("Table 2. TFs along the path ending at selected node:"+cnode.T+"_"+cnode.ID);
+		.text("Table 2. eTFs(Predicted using the expression of TFs) for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		createTable(tdiv,"alltftable",AllTFList);
 		
@@ -900,6 +894,7 @@
 		.attr("id","alltfdlink")
 		.text("");
 		
+		//-------------------------------------------------------------
 		//adding DE details
 		cnode=this.__data__;
 		pnode=cnode.parent;
@@ -921,6 +916,8 @@
 				return true;
 			} return false;
 		});
+		upresDEList.unshift(['DE gene','E'+pnode.T+"_"+pnode.ID+" expression",'E'+cnode.T+"_"+cnode.ID+" expression",'log2 fold change','edgeID'])
+		
 		createTable(tdiv,"detable",upresDEList);
 		tdiv.append("button")
 		.text("functional analysis")
@@ -952,6 +949,9 @@
 				return true;
 			} return false;
 		});
+		
+		downresDEList.unshift(['DE gene','E'+pnode.T+"_"+pnode.ID+" expression",'E'+cnode.T+"_"+cnode.ID+" expression",'log2 fold change','edgeID'])
+		
 		createTable(tdiv,"detable",downresDEList);
 		tdiv.append("button")
 		.text("functional analysis")
@@ -1339,7 +1339,7 @@
 	//add RTF texts
 	function addRTFText(text,showcutoff){
 		text.each(function(d){
-			var dRTF=d.rTF;
+			var dRTF=d.eTF;
 			if (dRTF.length>0){
 				var etf=dRTF
 				var etf=etf.slice(0,showcutoff).reverse();
@@ -1731,7 +1731,7 @@
 
 	function creatededownload(dedownloadlinkid){
 		var resList=[];
-		resList.push(["DE gene","Expression_from","Expression_to","Fold change","edgeID"]);
+		resList.push(["DE gene","Expression_from","Expression_to","log2 Fold change","edgeID"]);
 
 		for (var edge of edges){
 			var etf=edge.etf;
@@ -1763,7 +1763,8 @@
 	
 	function createtfdownload(tfdownloadlinkid){
 		var resList=[];
-		resList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
+		//target tfs
+		resList.push(["TF","p-value","TF log2 fold change","Mean target log2 fold change","Mean DE target log2 fold change","edgeID"]);
 		for (var edge of edges){
 			var etf=edge.etf;
 			var de=edge.de;
@@ -1793,6 +1794,23 @@
 				resList.push(tfresList);
 			}
 		}
+		
+		resList.push([]) //two empty lines to separate eTFs from TFs
+ 		resList.push([])
+		//expression TFs
+		resList.push(['eTF','p-value','log2 fold change to parent','log2 fold change to siblings','edgeID'])
+		for (var node of nodes){
+			var etfs=node.eTF;
+			var pnode=node.parent
+			if (pnode!="null" && etf!=undefined){
+				for (var etf of etfs){
+					var tfresList=[etf[1],etf[0].toExponential(2),etf[2],etf[3],'E'+pnode.T+"_"+pnode.ID+'->E'+node.T+"_"+node.ID]
+					resList.push(tfresList)
+				}
+			}
+			
+		}
+		
 		var outString=List2TSV(resList);
 		var blob=new Blob([outString],{type:'application/vnd.ms-excel'});
 		outurl=window.URL.createObjectURL(blob);
@@ -2171,7 +2189,8 @@
 	
 }(window.scviz =window.scviz ||{}, jQuery));
 	
-
 	
+
+
 
 	

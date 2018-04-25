@@ -19,7 +19,7 @@ also visualizes the differentiation process using a graph, in which nodes
 represent different sub-population cells and edges denote the 
 differentiation paths. 
 
-![flowchart](./scdiff/img/FlowChart1.jpg)
+![flowchart](./images/FlowChart1.jpg)
 
 # PREREQUISITES
 
@@ -119,12 +119,20 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						as the cutoff for differential genes (together with t-test p-value cutoff 0.05).
 						However, users are allowed to customize the cutoff based on their 
 						application scenario (e.g. log2 fold change 1.5). 
-
 						
+	-e ETFLISTFILE, --etfListFile ETFLISTFILE
+                        String, Optional, by default, scdiff recognizes 1.6k
+                        TFs (we collected in human and mouse). Users are able
+                        to provide a customized list of TFs instead using this
+                        option. It specifies the path to the TF list file, in
+                        which each line is a TF name. Here, it does not require 
+                        the targets information for the TFs, which will be used to infer
+                        eTFs (TFs predicted based on the expression of themselves instead of the their targets).
+                        
 ```
 # INPUTS AND PRE-PROCESSING
 
-scdiff takes the two required input files (-i/--input and -t/--tf_dna) and one optional config file (-k/--clusters).
+scdiff takes the two required input files (-i/--input and -t/--tf_dna), two optional files (-k/--cluster, -e/--etfListFile) and a few other optional parameters. 
 
 * __-i/--input__  
 This specifies the single cell RNA-Seq expression data.  
@@ -139,7 +147,7 @@ The input file has the following formatting requirements:
 		* __1st column__: Cell ID, represents the ID for the cell.
 		* __2nd column__: Cell time, Integer, represents the measurement time of the cell. 
 		* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't have any prior knowledge of the cell label. In this case, use "NA" instead.
-		Please note that the cell label is only used for analyzing the result, we did not use this information in scdiff method. 
+		Or, you can use any name you want name to label for each cell. We don't use this information in our model and it's only used to mark the cell in the visualization. 
 		* __4th- columns__: Gene expression values.  
 	
 	Example input:     
@@ -191,7 +199,17 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
   Example  config file: 
   [example.config](example/example.config)
   
-For the scdiff options, please refer to the [usage](#usage) section. 
+* __-e/--etfListFile__  
+  This species the path to the TF list file. By default, scdiff recognizes 1.6k TFs we collected in human and mouse.  
+  If users want to use their list of TFs, please use this parameter to specify the path to the file.   
+  
+  Format of the TF List file:
+  each row represents a TF standard name and matches to the gene expression names.  
+  We required that the predicted TFs must be expressing (based on the expression data).
+  
+  An example of the TF List file can be found under the "tf_dna" folder [HumanTFList.txt](tf_dna/HumanTFList.txt).
+  
+For other scdiff optional parameters, please refer to the [usage](#usage) section.   
 
 # RESULTS AND VISUALIZATION
 
@@ -203,7 +221,7 @@ provided JavaScript. Please use *Chrome/FireFox/Safari* browser for best experie
 
 The following is the manual for the visualization page. 
 
-**Visualization Config (Left panel)**:
+**Visualization Config (Left panel)**:  
   
 * **RESET**: It restores all configs to default.   
 The slider blow resizes the visualization. 
@@ -212,9 +230,19 @@ The slider blow resizes the visualization.
 	* **Plot Cells**: show PCA/TSNE/ISOMAP plots for all cells (use the radio button to select the dimension reduction method : PCA/T-SNE/ISOMAP for visualization).
 
 * **TF CONFIG** :  
-	* **Show/Hide TF** : display/hide the regulating TFs for each path.  
+	* **Show/Hide TF** : display/hide the regulating TFs (TFs predicted based on the expression of their targets) for each path.
+	If the targets of a TF x is significantly differentially expressed along a edge e, 
+	then TF x is predicted to regulate edge e.  	
 	* **Explore  TF** : highlight the regulating paths for given TF; show the expression profile of the input TF and the average fold change of the TF targets.  
-
+	* **SHow/Hide eTF**: display/hide the regulating eTFs (TFs predicted based on the expression of themselves). 
+	eTFs are the TFs predicted based on expression of themselves instead of the expression 
+	of their targets. If the expression of the TF x in one node (cluster y) is **significiantly** different compared to both 
+	the parent (z) and all the siblings, the TF will be predicted as eTF to regulate the edge between nodes(y->z). 
+	eTFs are very good complements to the target-based TFs as the TF target information is 
+	often limited and incomplete. We may miss important TFs, which only have no or very limited known targets, 
+	using only target-based methods.  
+	* **Explore eTF**: hightlight the regulating paths for given eTF; show the expression profile of the input eTF and the average fold change of the eTF targets.    
+	
 * **GENE CONFIG**:  
 	* **Show/Hide DE**: display/hide the differentially expressed genes for each edge.  
 	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
@@ -252,6 +280,7 @@ The slider blow resizes the visualization.
 					"CELL": list of cell indexes, // all the cells assigned to the node
 					"T": node time //estimated node level
 					"ID": node ID 
+					"eTF": list of TFs predicted based on their own expressions
 				},
 				...
 			],
@@ -276,10 +305,11 @@ The slider blow resizes the visualization.
 
 * mouse over each node to show the pie chart of cell types within each node. 
 * left click each node to show:
-	* Cell IDs (with labels) within the node. 
-	* Regulating TFs for the edge ending at the node.
-	* Regulating TFs for the whole path ending at the node. 
-	* DE genes for the edge ending at the node.
+	* Table 0: Cell IDs (with labels) within the node. 
+	* Tabel 1: Regulating TFs for the edge ending at the node.
+	* Tabel 2: Regulating eTFs for the edge path ending at the node. 
+	* Table 3: DE genes (up-regulated) for the edge ending at the node.
+	* Table 4: DE genes (down-regulated) for the edge ending at the node
 	
 	
 # EXAMPLES
@@ -476,7 +506,7 @@ with open("example.E","r") as f:
 ```
 
 
-**[scdiff.Graph(Cells, tfdna, kc, largeType=None, dsync=None, virtualAncestor=None)](#graph) <a id="graph"></a>**  
+**[scdiff.Graph(Cells, tfdna, kc, largeType=None, dsync=None, virtualAncestor=None,fChangCut=1.0, etfile=None)](#graph) <a id="graph"></a>**  
 This class defines the differentiation graph. 
 
 **Parameters**:  
@@ -499,6 +529,13 @@ this function will be disabled. No cell time synchronization will be made.
 By default, all cells at the first time will be regarded as the starting ancestor for all cells at later time points. 
 If users believe that the cells are already differentiated significantly and there are already more than 1 group at the first time point.  
 Then, a virtual ancestor needs to be used by setting virtualAncestor as "True" or "1" . 
+* **fChangeCut**: 1.0 (default) or any other float(e.g. 1.5)  
+By default, we used 1.0 as the cutoff (together with t-test p-value cutoff 0.05) to
+find DE genes. Users are allowed to choose other cutoffs using this parameter.
+
+* **etfile**: None(default) or String (path to the TF List file). 
+By default, we used the 1.6k TFs collected in human and mouse.
+Users are allowed to choose their own TF list using this parameter.
 
 **Output**:  
 A graph instance with all nodes and edges, which represents the differentiation structure for given inputs. 

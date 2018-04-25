@@ -58,7 +58,7 @@ def GtoJson(G1,GL,dTD):
 			#DT=max(0,(DTL[0]-sum(j.DTA)/len(j.DTA))/(DTL[0]-MIN_DTL))
 		except:
 			DT='NA'
-		jcj={'ID':j.ID,'T':j.T,'E':j.E,'D':DT,'CELL':ij,"parent": "null" if j.P==None else G1.Nodes.index(j.P),"children": "null" if j.C==[] else [G1.Nodes.index(item) for item in j.C]}
+		jcj={'ID':j.ID,'eTF':j.eTF,'T':j.T,'E':j.E,'D':DT,'CELL':ij,"parent": "null" if j.P==None else G1.Nodes.index(j.P),"children": "null" if j.C==[] else [G1.Nodes.index(item) for item in j.C]}
 		NL.append(jcj)	
 			
 	EL=[]
@@ -291,6 +291,7 @@ def viz(scg_name,G1,output):
 	#-----------------------------------------------------------------------
 	# HTML template
 	HTML_template="""
+
 	
 	<!DOCTYPE html>
 	<html lang="en">
@@ -374,13 +375,13 @@ def viz(scg_name,G1,output):
 							<input type="submit" value="Explore TF" onclick="scviz.explore.exploretf('tfName')">
 							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { scviz.explore.exploretf('tfName') }">
 							</li>
-						<!--
-						<li><label title="show top ranked 20 regulating RTFs (if have) for each edge">Show/Hide RTF for each path: <input class="checkbox" id="rtfcheck" type="checkbox"  onchange="scviz.explore.showhideRTF(checked)"> </input></label> </li>
+						
+						<li><label title="show top ranked 20 regulating eTFs (if have) for each edge">Show/Hide eTF for each path: <input class="checkbox" id="rtfcheck" type="checkbox"  onchange="scviz.explore.showhideRTF(checked)"> </input></label> </li>
 						<li>
-							<input type="submit" value="Explore RTF" onclick="scviz.explore.explorertf('rtfName')">
+							<input type="submit" value="Explore eTF" onclick="scviz.explore.explorertf('rtfName')">
 							<input type="text" id="rtfName" value="" onkeydown="if (event.keyCode == 13) {scviz.explore.explorertf('rtfName') }">
 							</li>
-							-->
+							
 					
 					  </ul>
 					</div>
@@ -431,17 +432,13 @@ def viz(scg_name,G1,output):
 	</html>
 	
 
+	
+
 	"""
 
 	#-----------------------------------------------------------------------
 	# javascript
 	javascript="""
-
-
-
-
-
-
 
 (function(scviz, $, undefined){
 	//global parameters
@@ -721,7 +718,7 @@ def viz(scg_name,G1,output):
 		createEdgeTF();
 		
 		//create RTF display svg text
-		if (nodes[0].rTF!=undefined){
+		if (nodes[0].eTF!=undefined){
 			createRTFs();
 		}
 		
@@ -878,7 +875,7 @@ def viz(scg_name,G1,output):
 			var tnodeList=[];
 			var etfList=[];
 			for (var edge of edges){
-				var rtf=nodes[edge.to].rTF
+				var rtf=nodes[edge.to].eTF
 				rtf=rtf.slice(0,searchCut);
 				var rtfList=rtf.map(function(d){return d[1].toUpperCase();});
 				if (rtfList.indexOf(rtfinput)!=-1){
@@ -1068,8 +1065,6 @@ def viz(scg_name,G1,output):
 			//add table main body		
 			createTable(tdiv,"deg_between",upList);
 			
-			
-			
 			tdiv
 			.append("p")
 			.text("Table: Differentially expressed genes (Down-regulated) between : "+xdenode1+" and "+xdenode2);
@@ -1219,7 +1214,7 @@ def viz(scg_name,G1,output):
 				
 				
 			}
-			scviz.plots.barplot(nodeIDList,nodeValueList,"Average targets fold change of "+tfinput+"(only considered differential targets, the fold change is calculated along the edge ending at given node)",500);
+			scviz.plots.barplot(nodeIDList,nodeValueList,"Average targets log2 fold change of "+tfinput+"(only considered differential targets, the log2 fold change is calculated along the edge ending at given node)",500);
 			//console.log(targets);
 		}
 	}
@@ -1277,13 +1272,13 @@ def viz(scg_name,G1,output):
 		}
 		
 		var resList=[]; //TF details
-		resList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
+		resList.push(["TF","p-value","TF log2 fold change","Mean target log2 fold change","Mean DE target log2 fold change","edgeID"]);
 
 		resList=exportTFEdge(resList,chosenEdge);
 		
 		tdiv
 		.append("p")
-		.text("Table 1. TF details for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
+		.text("Table 1. TFs(Predicted using the expression of the TF targets) for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		
 		createTable(tdiv,"tftable",resList);
@@ -1300,6 +1295,8 @@ def viz(scg_name,G1,output):
 		
 		////TF details for path ending at selected node
 		cnode=this.__data__;
+		
+		/*
 		pnode=cnode.parent;
 		var chosenPath=[]
 		
@@ -1309,20 +1306,20 @@ def viz(scg_name,G1,output):
 			pnode=pnode.parent;
 			chosenPath.push(ec);
 		}
+		*/
 		
-
+		
 		var AllTFList=[];
-		AllTFList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
-
-		for (var cedge of chosenPath){
-			AllTFList=exportTFEdge(AllTFList,JSON.parse(JSON.stringify(cedge)));
-			
+		AllTFList.push(["TF","p-value","log2 fold change to parent","log2 fold change to siblings ","edgeID"]);
+		
+		for (var etf of cnode.eTF){
+			AllTFList.push([etf[1],etf[0].toExponential(2),etf[2].toFixed(2),etf[3].toFixed(2),'E'+pnode.T+"_"+pnode.ID+"->E"+cnode.T+"_"+cnode.ID])
 		}
-
+	
 		AllTFList.sort(function(a,b){return a[1]-b[1];});
 		tdiv
 		.append("p")
-		.text("Table 2. TFs along the path ending at selected node:"+cnode.T+"_"+cnode.ID);
+		.text("Table 2. eTFs(Predicted using the expression of TFs) for the edge ending at selected node:"+cnode.T+"_"+cnode.ID);
 		
 		createTable(tdiv,"alltftable",AllTFList);
 		
@@ -1337,6 +1334,7 @@ def viz(scg_name,G1,output):
 		.attr("id","alltfdlink")
 		.text("");
 		
+		//-------------------------------------------------------------
 		//adding DE details
 		cnode=this.__data__;
 		pnode=cnode.parent;
@@ -1358,6 +1356,8 @@ def viz(scg_name,G1,output):
 				return true;
 			} return false;
 		});
+		upresDEList.unshift(['DE gene','E'+pnode.T+"_"+pnode.ID+" expression",'E'+cnode.T+"_"+cnode.ID+" expression",'log2 fold change','edgeID'])
+		
 		createTable(tdiv,"detable",upresDEList);
 		tdiv.append("button")
 		.text("functional analysis")
@@ -1389,6 +1389,9 @@ def viz(scg_name,G1,output):
 				return true;
 			} return false;
 		});
+		
+		downresDEList.unshift(['DE gene','E'+pnode.T+"_"+pnode.ID+" expression",'E'+cnode.T+"_"+cnode.ID+" expression",'log2 fold change','edgeID'])
+		
 		createTable(tdiv,"detable",downresDEList);
 		tdiv.append("button")
 		.text("functional analysis")
@@ -1776,7 +1779,7 @@ def viz(scg_name,G1,output):
 	//add RTF texts
 	function addRTFText(text,showcutoff){
 		text.each(function(d){
-			var dRTF=d.rTF;
+			var dRTF=d.eTF;
 			if (dRTF.length>0){
 				var etf=dRTF
 				var etf=etf.slice(0,showcutoff).reverse();
@@ -2168,7 +2171,7 @@ def viz(scg_name,G1,output):
 
 	function creatededownload(dedownloadlinkid){
 		var resList=[];
-		resList.push(["DE gene","Expression_from","Expression_to","Fold change","edgeID"]);
+		resList.push(["DE gene","Expression_from","Expression_to","log2 Fold change","edgeID"]);
 
 		for (var edge of edges){
 			var etf=edge.etf;
@@ -2200,7 +2203,8 @@ def viz(scg_name,G1,output):
 	
 	function createtfdownload(tfdownloadlinkid){
 		var resList=[];
-		resList.push(["TF","p-value","TF fold change","Mean target fold change","Mean DE target fold change","edgeID"]);
+		//target tfs
+		resList.push(["TF","p-value","TF log2 fold change","Mean target log2 fold change","Mean DE target log2 fold change","edgeID"]);
 		for (var edge of edges){
 			var etf=edge.etf;
 			var de=edge.de;
@@ -2230,6 +2234,23 @@ def viz(scg_name,G1,output):
 				resList.push(tfresList);
 			}
 		}
+		
+		resList.push([]) //two empty lines to separate eTFs from TFs
+ 		resList.push([])
+		//expression TFs
+		resList.push(['eTF','p-value','log2 fold change to parent','log2 fold change to siblings','edgeID'])
+		for (var node of nodes){
+			var etfs=node.eTF;
+			var pnode=node.parent
+			if (pnode!="null" && etf!=undefined){
+				for (var etf of etfs){
+					var tfresList=[etf[1],etf[0].toExponential(2),etf[2],etf[3],'E'+pnode.T+"_"+pnode.ID+'->E'+node.T+"_"+node.ID]
+					resList.push(tfresList)
+				}
+			}
+			
+		}
+		
 		var outString=List2TSV(resList);
 		var blob=new Blob([outString],{type:'application/vnd.ms-excel'});
 		outurl=window.URL.createObjectURL(blob);
@@ -2608,8 +2629,9 @@ def viz(scg_name,G1,output):
 	
 }(window.scviz =window.scviz ||{}, jQuery));
 	
-
 	
+
+
 
 	"""
 	#-----------------------------------------------------------------------

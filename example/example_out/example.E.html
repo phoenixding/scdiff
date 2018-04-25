@@ -1,4 +1,5 @@
 
+
 	
 	<!DOCTYPE html>
 	<html lang="en">
@@ -13,7 +14,7 @@
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
 		<script src="parseJSON.js"></script>
-		<script type="text/javascript" src=".\example.E.json"></script>
+		<script type="text/javascript" src="example.E.json"></script>
 		
 		<script>
 		var fold=function(divid){
@@ -82,13 +83,13 @@
 							<input type="submit" value="Explore TF" onclick="scviz.explore.exploretf('tfName')">
 							<input type="text" id="tfName" value="" onkeydown="if (event.keyCode == 13) { scviz.explore.exploretf('tfName') }">
 							</li>
-						<!--
-						<li><label title="show top ranked 20 regulating RTFs (if have) for each edge">Show/Hide RTF for each path: <input class="checkbox" id="rtfcheck" type="checkbox"  onchange="scviz.explore.showhideRTF(checked)"> </input></label> </li>
+						
+						<li><label title="show top ranked 20 regulating eTFs (if have) for each edge">Show/Hide eTF for each path: <input class="checkbox" id="rtfcheck" type="checkbox"  onchange="scviz.explore.showhideRTF(checked)"> </input></label> </li>
 						<li>
-							<input type="submit" value="Explore RTF" onclick="scviz.explore.explorertf('rtfName')">
+							<input type="submit" value="Explore eTF" onclick="scviz.explore.explorertf('rtfName')">
 							<input type="text" id="rtfName" value="" onkeydown="if (event.keyCode == 13) {scviz.explore.explorertf('rtfName') }">
 							</li>
-							-->
+							
 					
 					  </ul>
 					</div>
@@ -137,6 +138,8 @@
 			<div id="div_svg"> </div>
 		</body>
 	</html>
+	
+
 	
 
 	

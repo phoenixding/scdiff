@@ -8,7 +8,7 @@ setup(  name='scdiff',
 		url="https://github.com/phoenixding/scdiff",
 		license='MIT',
 		packages=['scdiff'],
-		package_data={'scdiff':['img/logo.gif','img/FlowChart.jpg']},
+		package_data={'scdiff':['img/logo.gif','tfdata/HumanTFList.txt']},
 		entry_points={'console_scripts':['scdiff=scdiff.scdiff:main','scdiff_gui=scdiff.scdiff_gui:main']},
 		install_requires=['scipy','numpy','scikit-learn'],
 		classifiers=[
