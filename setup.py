@@ -10,7 +10,7 @@ setup(  name='scdiff',
 		packages=['scdiff'],
 		package_data={'scdiff':['img/logo.gif','tfdata/HumanTFList.txt']},
 		entry_points={'console_scripts':['scdiff=scdiff.scdiff:main','scdiff_gui=scdiff.scdiff_gui:main']},
-		install_requires=['scipy','numpy','scikit-learn'],
+		install_requires=['scipy','numpy','scikit-learn','pyDiffMap'],
 		classifiers=[
 			'Development Status :: 3 - Alpha',
 			'License :: OSI Approved :: MIT License',

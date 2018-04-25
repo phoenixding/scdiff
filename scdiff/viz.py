@@ -4,6 +4,7 @@ import pdb,sys,os,json
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap
+import pydiffmap.diffusion_map as pdm
 
 #-----------------------------------------------------------------------
 # export data ==>json
@@ -26,6 +27,12 @@ def GtoJson(G1,GL,dTD):
 	isomap=Isomap(n_components=2)
 	isomap_matrix=isomap.fit_transform(xmatrix)
 	
+	# diffusion map 
+	dmk=min(len(xmatrix),10)
+	dfmap=pdm.DiffusionMap(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
+	dfmap_matrix=dfmap.fit_transform(xmatrix)
+	
+	
 	#pdb.set_trace()
 	
 	CL=[]
@@ -34,12 +41,13 @@ def GtoJson(G1,GL,dTD):
 		ixtsne=xtsne_matrix[i]
 		ixpca=xpca2_matrix[i]
 		ixisomap=isomap_matrix[i]
+		idf=dfmap_matrix[i]
 		
 		jci={item:jci[item] for item in ["ID","T","typeLabel"]}
 		jci["TE"]=list(ixtsne)
 		jci["PE"]=list(ixpca)
 		jci["IE"]=list(ixisomap)
-		
+		jci['ME']=list(idf)
 		CL.append(jci)
 			
 	NL=[]
@@ -292,7 +300,6 @@ def viz(scg_name,G1,output):
 	# HTML template
 	HTML_template="""
 
-	
 	<!DOCTYPE html>
 	<html lang="en">
 	  <head>
@@ -355,7 +362,8 @@ def viz(scg_name,G1,output):
 						<li>
 							<input type="submit" value="Plot Cells" onclick='scviz.vizCells("viztypep")'> <br>
 							<input type="radio" name="viztype" value="tsne" id="viztypet" checked> T-SNE
-							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA 
+							<input type="radio" name="viztype" value="pca" id="viztypep">  PCA <br>
+							<input type="radio" name="viztype" value="dfmap" id="viztyped"> Diffusion Map
 							<input type="radio" name="viztype" value="isomap" id="viztypem">  ISOMAP <br>
 							</li>
 						<!--<form action="/cgi-bin/colorCells.py" target="/cgi-bin/images/">
@@ -430,15 +438,13 @@ def viz(scg_name,G1,output):
 			<div id="div_svg"> </div>
 		</body>
 	</html>
-	
-
-	
 
 	"""
 
 	#-----------------------------------------------------------------------
 	# javascript
 	javascript="""
+
 
 (function(scviz, $, undefined){
 	//global parameters
@@ -485,6 +491,8 @@ def viz(scg_name,G1,output):
 					xData.push(cell.PE);
 				}else if (plotType=="isomap"){
 					xData.push(cell.IE);
+				}else if (plotType=="dfmap"){
+					xData.push(cell.ME)
 				}else {
 					xData.push(cell.TE);
 				}
@@ -2629,10 +2637,6 @@ def viz(scg_name,G1,output):
 	
 }(window.scviz =window.scviz ||{}, jQuery));
 	
-	
-
-
-
 	"""
 	#-----------------------------------------------------------------------
 	

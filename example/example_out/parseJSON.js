@@ -1,5 +1,6 @@
 
 
+
 (function(scviz, $, undefined){
 	//global parameters
 	textfontsize=11;
@@ -45,6 +46,8 @@
 					xData.push(cell.PE);
 				}else if (plotType=="isomap"){
 					xData.push(cell.IE);
+				}else if (plotType=="dfmap"){
+					xData.push(cell.ME)
 				}else {
 					xData.push(cell.TE);
 				}
@@ -2189,8 +2192,4 @@
 	
 }(window.scviz =window.scviz ||{}, jQuery));
 	
-	
-
-
-
 	

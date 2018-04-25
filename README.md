@@ -10,14 +10,20 @@
 
 
 # INTRODUCTION 
+<div style="text-align: justify"> 
+Current methods have relied primarily on the assumption that descendant cells are similar to their parents in terms of gene expression levels. 
+These assumptions do not always hold for in-vivo studies which often include infrequently sampled, un-synchronized and diverse cell populations. 
+Thus, additional information may be needed to determine the correct ordering and branching of progenitor cells and the set of transcription factors (TFs) 
+that are active during advancing stages of organogenesis. To enable such modeling we developed scdiff,
+which integrates expression similarity with regulatory information to reconstruct the dynamic developmental cell trajectories. 
 
 
-SCDIFF is a python package designed to analyze the cell differentiation process 
-using time-series single cell RNA-seq data. It can be used to predict the
-transcription factors, which regulate the cell differentiation process and the differential genes along the differentiation process. It
-also visualizes the differentiation process using a graph, in which nodes
-represent different sub-population cells and edges denote the 
-differentiation paths. 
+SCDIFF is a package written in python and javascript, designed to analyze the cell differentiation trajectories
+using time-series single cell RNA-seq data. It is able to predict the
+transcription factors and differential genes associated with the cell differentiation trajectoreis. 
+It also visualizes the trajectories using an interactive tree-stucture graph, in which nodes
+represent different sub-population cells (clusters). 
+</div>  
 
 ![flowchart](./images/FlowChart1.jpg)
 
@@ -32,34 +38,60 @@ instructions.
 -- scikit-learn   
 -- scipy  
 -- numpy  
-The python setup.py script will try to install these packages automatically.
+The python setup.py script (or pip) will try to install these packages automatically.
 However, please install them manually if, by any reason, the automatic 
 installation fails. 
 
 # INSTALLATION
  
-cd to the package root directory 
+ There are 3 options to install scdiff.  
+* __Option 1: Install from download directory__   
+	cd to the downloaded scdiff package root directory
 
-```shell
-$cd scdiff
-```
-run python setup to install   
+	```shell
+	$cd scdiff
+	```
+	run python setup to install   
 
-```shell
-$python setup.py install
-```
-    
-Linux, Mac:
+	```shell
+	$python setup.py install
+	```
+		
+	MacOS or Linux users might need the sudo/root access to install. 
+	Users without the root access can install the package using the pip/easy_install with a --user parameter ([install python libraries without root](https://stackoverflow.com/questions/7465445/how-to-install-python-modules-without-root-access))．
+	 
+	```shell  
+	$sudo python setup.py install 
+	```
+	use python3 instead of python in the above commands to install if using python3. 
+	
+* __Option 2: Install from Github__:    
 
-```shell  
-$sudo python setup.py install 
-```
+	python 2:  
+	```shell
+	$sudo pip install --upgrade https://github.com/phoenixding/scdiff/zipball/master
+	```
+	python 3: 
+	```shell
+	$sudo pip3 install --upgrade https://github.com/phoenixding/scdiff/zipball/master
+	```
 
-or install via pip (should work in most operating systems):  
 
-```shell
-$sudo pip install --upgrade https://github.com/phoenixding/scdiff/zipball/master
-```
+* __Option 3: Install from PyPI__ :    
+ 
+	python2:   
+	```
+	$sudo pip install --upgrade scdiff
+	```
+	python 3:
+	```
+	$sudo pip3 install --upgrade scdiff
+	```
+The above pip installation options should be working for Linux, Window and MacOS systems.   
+For MacOS users, it's recommended to use python3 installation. The default python2 in MacOS has
+some compatibility issues with a few dependent libraries. The users would have to install their own
+version of python2 (e.g. via [Anocanda](https://anaconda.org/)) if they prefer to use python2 in MacOS.  
+
 # USAGE
 
 ```shell
@@ -223,17 +255,26 @@ The following is the manual for the visualization page.
 
 **Visualization Config (Left panel)**:  
   
-* **RESET**: It restores all configs to default.   
-The slider blow resizes the visualization. 
-
-* **CELL PLOTS** :
-	* **Plot Cells**: show PCA/TSNE/ISOMAP plots for all cells (use the radio button to select the dimension reduction method : PCA/T-SNE/ISOMAP for visualization).
-
+* **GLOBAL Config**:  
+	![global config](./images/globalconfig.png)      
+	* **RESET** : It restores all configs to default. The slider blow resizes the visualization. 
+	* **Enable/Diable tooltip**: By Enabling the tooltip, users are able to see the percentages for each type of cell labels in the node.   
+	* ** Set Color**: Users are allowed to customize the background, text and edge colors using the Set Background/Text/Edge color buttons.   
+	 
+* **CELL PLOTS**:  
+	![cell plots](./images/cellplots.png)  
+	* **Plot Cells**: show PCA/TSNE/ISOMAP plots for all cells and the clusters (use the radio button to select the dimension reduction method : PCA/T-SNE/ISOMAP/Diffusion Map for visualization).
+	![diffusion_map.png](./images/diffusion_map.png)
+	By clicking the cluster labels on the top, users are able to show/hide the cells from that cluster. 
+	
+	
 * **TF CONFIG** :  
+	![tf config](./images/tfconfig.png)
 	* **Show/Hide TF** : display/hide the regulating TFs (TFs predicted based on the expression of their targets) for each path.
 	If the targets of a TF x is significantly differentially expressed along a edge e, 
 	then TF x is predicted to regulate edge e.  	
-	* **Explore  TF** : highlight the regulating paths for given TF; show the expression profile of the input TF and the average fold change of the TF targets.  
+	* **Explore  TF** : highlight the regulating paths for given TF; show the expression profile of the input TF and the average fold change of the TF targets. 
+	![explore tf](./images/exploretf.png)   
 	* **SHow/Hide eTF**: display/hide the regulating eTFs (TFs predicted based on the expression of themselves). 
 	eTFs are the TFs predicted based on expression of themselves instead of the expression 
 	of their targets. If the expression of the TF x in one node (cluster y) is **significiantly** different compared to both 
@@ -244,12 +285,14 @@ The slider blow resizes the visualization.
 	* **Explore eTF**: hightlight the regulating paths for given eTF; show the expression profile of the input eTF and the average fold change of the eTF targets.    
 	
 * **GENE CONFIG**:  
+	![gene config](./images/geneconfig.png)
 	* **Show/Hide DE**: display/hide the differentially expressed genes for each edge.  
 	* **Explore DE gene** : highlight the paths with those DE genes and also show the expression profile of the input gene.     
 	* **Find DE genes between** : find the differentially expressed genes between two specified nodes. Use the dropdown menu to specify two nodes for comparison. 
 	On the results page, click the "functional analysis" button to perform a gene enrichment anlayis using PANTHER (or ToppGene by shift+click).
-
-* **Download**: 
+	![explore de](./images/explorede.png)
+* **Download**:   
+	![download config](./images/downloadconfig.png)
 	* **Generate Figure**: download the visualization figure.
 	* **Generate Json download file**: download the json file, which contains all information of the model.   
 		
@@ -263,6 +306,7 @@ The slider blow resizes the visualization.
 					"TE": [x0,y0], // cell coordinates in 2D space projected by T-SNE 
 					"PE": [x1,y1], // cell coordinates in 2D space projected by PCA
 					"IE": [x2,y2], // cell coordinates in 2D space projected by ISOMAP
+					"ME": [x3,y3], // cell coordinates in 2D space projected by Diffusion map
 					"typeLabel": cell Label, // label of the cell if known
 					"ID": cell ID,
 					"T": cell measure time
@@ -303,7 +347,7 @@ The slider blow resizes the visualization.
 
 **Visualization Canvas (Right Panel)**:
 
-* mouse over each node to show the pie chart of cell types within each node. 
+* mouse over each node to show the pie chart of cell types within each node (need to enable the tooltip).
 * left click each node to show:
 	* Table 0: Cell IDs (with labels) within the node. 
 	* Tabel 1: Regulating TFs for the edge ending at the node.
