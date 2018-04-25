@@ -121,13 +121,13 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						application scenario (e.g. log2 fold change 1.5). 
 						
 	-e ETFLISTFILE, --etfListFile ETFLISTFILE
-                        String, Optional, by default, scdiff recognizes 1.6k
-                        TFs (we collected in human and mouse). Users are able
-                        to provide a customized list of TFs instead using this
-                        option. It specifies the path to the TF list file, in
-                        which each line is a TF name. Here, it does not require 
-                        the targets information for the TFs, which will be used to infer
-                        eTFs (TFs predicted based on the expression of themselves instead of the their targets).
+						String, Optional, by default, scdiff recognizes 1.6k
+						TFs (we collected in human and mouse). Users are able
+						to provide a customized list of TFs instead using this
+						option. It specifies the path to the TF list file, in
+						which each line is a TF name. Here, it does not require 
+						the targets information for the TFs, which will be used to infer
+						eTFs (TFs predicted based on the expression of themselves instead of the their targets).
                         
 ```
 # INPUTS AND PRE-PROCESSING
