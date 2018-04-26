@@ -178,8 +178,11 @@ The input file has the following formatting requirements:
 	* __Data Rows__  
 		* __1st column__: Cell ID, represents the ID for the cell.
 		* __2nd column__: Cell time, Integer, represents the measurement time of the cell. 
-		* __3rd column__: Cell label, represents the label of the cell (if known). In most cases, we don't have any prior knowledge of the cell label. In this case, use "NA" instead.
-		Or, you can use any name you want to label each cell. We don't use this information in our model and it's only used to mark the cell in the visualization. 
+		* __3rd column__: Cell label, represents the label of the cell (e.g cell type if known). In most cases, we don't have any prior knowledge of the cell type. In this case, use "NA" instead.
+		Or, you can use any name you want to label each cell. We don't use this information in our model and it's only used to mark the cells with 
+		the same attributes (any known attributes users are interested in, for example, cell type, time point, WT/Treatment, etc.) in the visualization. 
+		Please avoid too many different labels, which will make the visualization very crowded. It's recommended to use <20 different labels. 
+		If, however, users want to use more labels, please use the 'NA' as the label for all cells and use the cell IDs to infer the label composition of each node. 
 		* __4th- columns__: Gene expression values.  
 	
 	Example input:     
