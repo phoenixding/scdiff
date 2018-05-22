@@ -11,7 +11,7 @@
 
 # INTRODUCTION 
 <div style="text-align: justify"> 
-Current methods have relied primarily on the assumption that descendant cells are similar to their parents in terms of gene expression levels. 
+Most existing single-cell trajectory inference methods have relied primarily on the assumption that descendant cells are similar to their parents in terms of gene expression levels. 
 These assumptions do not always hold for in-vivo studies which often include infrequently sampled, un-synchronized and diverse cell populations. 
 Thus, additional information may be needed to determine the correct ordering and branching of progenitor cells and the set of transcription factors (TFs) 
 that are active during advancing stages of organogenesis. To enable such modeling we developed scdiff,
@@ -38,6 +38,10 @@ instructions.
 -- scikit-learn   
 -- scipy  
 -- numpy  
+-- matplotlib  
+-- pydiffmap  
+-- imbalanced_learn  
+
 The python setup.py script (or pip) will try to install these packages automatically.
 However, please install them manually if, by any reason, the automatic 
 installation fails. 
@@ -152,8 +156,8 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						However, users are allowed to customize the cutoff based on their 
 						application scenario (e.g. log2 fold change 1.5). 
 						
-	-e ETFLISTFILE, --etfListFile ETFLISTFILE
-						String, Optional, by default, scdiff recognizes 1.6k
+	-e ETFLISTFILE, --etfListFile ETFLISTFILE (String), optional  
+						By default, scdiff recognizes 1.6k
 						TFs (we collected in human and mouse). Users are able
 						to provide a customized list of TFs instead using this
 						option. It specifies the path to the TF list file, in
@@ -190,8 +194,8 @@ The input file has the following formatting requirements:
 
 * __-t/--tf_dna__  
 This specifies the TF-gene interaction data.  In other words, it specifies the TF targets. 
-Under the tf_dna directory, we provided a human TF-gene interaction file inferred using the strategy in our previous study (https://www.ncbi.nlm.nih.gov/pubmed/20219943). 
-Although this TF-gene interaction file is collected in human, it should be also able to apply to other close species such as mouse.   
+Under the tf_dna directory, we provided a [human TF-gene interaction file](tf_dna/Human_TF_targets.txt) and a [mouse TF-gene interaction file](tf_dna/Mouse_TF_targets.txt) inferred using the strategy in our previous study (https://www.ncbi.nlm.nih.gov/pubmed/20219943). 
+Although this TF-gene interactions are collected in human and mouse, they should be also able to apply to other close species.
 Besides, in our previous work DREM (http://sb.cs.cmu.edu/drem/), we did collected the TF-gene interactions for common species including human, mouse, fry, E.coli, yeast, Arabidopsis. 
 Please refer to  http://sb.cs.cmu.edu/drem/DREMmanual.pdf appendix B for complete details. 
 Those TF-gene interaction files can be downloaded from our DREM software (https://github.com/phoenixding/idrem/tree/master/TFInput).
@@ -208,7 +212,7 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
 		This column is not used in scdiff. 
 		 	
 	Example file:   
-	[example TF gene interaction file](tf_dna/human_predicted_100.txt.update)
+	[example TF gene interaction file](tf_dna/Human_TF_targets.txt)
 
 * __-k/--cluster__  
   This specifies the clustering parameter (String).   
@@ -242,7 +246,7 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
   each row represents a TF standard name and matches to the gene expression names.  
   We required that the predicted TFs must be expressing (based on the expression data).
   
-  An example of the TF List file can be found under the "tf_dna" folder [HumanTFList.txt](tf_dna/HumanTFList.txt).
+  An example of the TF List file can be found under the "tf_list" folder [HumanTFList.txt](tf_list/Human_mouse_TFList.txt).
   
 For other scdiff optional parameters, please refer to the [usage](#usage) section.   
 
@@ -771,8 +775,9 @@ Then, you will find the visualized result page in HTML under 'e1_out' directory.
 # CREDITS
  
 This software was developed by ZIV-system biology group @ Carnegie Mellon University.  
-Implemented by Jun Ding
+Implemented by Jun Ding.
 
+Please cite our paper [Reconstructing differentiation networks and their regulation from time series single cell expression data](https://genome.cshlp.org/content/early/2018/01/09/gr.225979.117). 
 
 # LICENSE 
  

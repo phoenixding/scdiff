@@ -33,6 +33,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import KMeans
 from sklearn.cluster import Birch
+from imblearn.over_sampling import SMOTE
 
 from sklearn.metrics import silhouette_score
 from sklearn.linear_model import LogisticRegression
@@ -193,7 +194,7 @@ class Clustering:
 		KET=self.KET
 		dCK = {}
 		dCK[KET[0]] = K0
-		K = range(2, 10) if self.largeType==None else range(2,7)
+		K = range(2, 10) if self.largeType==None else range(2,8)
 		print("learning K...")
 		
 		#-----------------------------------------------------------------
@@ -572,7 +573,7 @@ class Path:
                 self.atf=self.getActiveTF(dTD,dTG,dMb)                                             # TF targets are significantly different between fromNode and toNode
 
 		#---------------------------------------------------------------------- 
-                self.B=self.getTransition(2,-2,dTD,dTG,dMb,fChangeCut)                  # transition offset
+                self.B=self.getTransition(dTD,dTG,dMb,fChangeCut)                       # transition offset
                 self.Q=self.getProcessVariance(MU=self.fromNode.E)                      # initial process variance
 
                 #self.fulltext = '' # for drawing purpose
@@ -688,11 +689,11 @@ class Path:
 
         #-------------------------------------------------------------------
         # regresion model for each path
-        def getTransition(self,U,D,dTD,dTG,dMb,FCUT=1):
+        def getTransition(self,dTD,dTG,dMb,FCUT=1):
                 G = self.getFC()
                 dFC = {item[0].upper(): item[1] for item in G}
                 etfID = [item[1] for item in self.etf]
-                [X, Y] = buildTrain(G, dTG, etfID,self.GL)
+                [X, Y,U,D] = buildTrain(G, dTG, etfID,self.GL,FCUT)
                 LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
                 dR = {0: U, 1: D, 2: 0}
                 HGL = [item.upper() for item in self.GL]
@@ -1463,17 +1464,28 @@ def batchScanPrior(A,dTD):
 
 #-----------------------------------------------------------------------
 # building traning dataset for regression
-def buildTrain(G,dTG,etf,GL):
+def buildTrain(G,dTG,etf,GL,Fcut=1):
 	# G: differential genes for a given path
 	# dTD: DNA->TF dictionary
 	# TF candidate
-	Fcut=1.5
-	Ncut=0.5
-	#SZ=1000 # SAMPLE SIZE
-	UP=[item[0].upper() for item in G if item[1]>Fcut]
-	DN=[item[0].upper() for item in G if item[1]<-1*Fcut]
-	NN=[item[0].upper() for item in G if abs(item[1])<Ncut]
-
+	Ncut=Fcut/2.0
+	
+	#UP=[item[0].upper() for item in G if item[1]>Fcut]
+	#DN=[item[0].upper() for item in G if item[1]<-1*Fcut]
+	#NN=[item[0].upper() for item in G if abs(item[1])<Ncut]
+	UP=[item for item in G if item[1]>Fcut]
+	DN=[item for item in G if item[1]<-1*Fcut]
+	NN=[item for item in G if abs(item[1])<Ncut]
+	
+	
+	U=sum([item[1] for item in UP])/len(UP)
+	D=sum([item[1] for item in DN])/len(DN)
+	
+	UP=[item[0].upper() for item in UP]
+	DN=[item[0].upper() for item in DN]
+	NN=[item[0].upper() for item in NN]
+	
+	
 	XU=[]
 	XD=[]
 	XN=[]
@@ -1502,7 +1514,16 @@ def buildTrain(G,dTG,etf,GL):
 
 	X=XU+XD+XN
 	Y=YU+YD+YN
-	return [X,Y]
+	
+	# to solve the imbalanced training set issue, use over-sampling techqniue- SMOTE
+	sm=SMOTE(random_state=0)
+	Xs,Ys=sm.fit_sample(X,Y)
+	
+	Xs=list(Xs)
+	Ys=list(Ys)
+	
+	#pdb.set_trace()
+	return [Xs,Ys,U,D]
 
 # parse Logistic regression result
 def parseLR(etf,LRC):
@@ -1545,6 +1566,23 @@ def buildVirtualAncestor(AllCells,VT=None):
 	virtual_ancestor=Cell('virtual_ancestor',TA,AE,'NA',GL)
 	return virtual_ancestor
 
+#-----------------------------------------------------------------------
+# differenc between ACL and ACL_update
+
+def ClusteringDifference(ACL,ACL_update):
+	
+	totaloverlap=0
+	for i in ACL_update:
+		ci=[]
+		for j in ACL:
+			ov=[item for item in i if item in j]
+			ci.append(len(ov))
+		maxci=max(ci)
+		totaloverlap+=maxci
+	pertotaloverlap=totaloverlap*1.0/sum([len(item) for item in ACL_update])
+	pdiff=1-pertotaloverlap
+	return pdiff
+	
 #----------------------------------------------------------------------
 #=======================================================================
 # MAIN program starts here!
@@ -1641,10 +1679,11 @@ def  main():
 	scg_name=scg.split('/')[-1]
 	viz(scg_name,G1,output)
 	
+	sflag=0
 	if (args.speedup=='1') or (args.speedup=='True'):
-		print("done!")
-		sys.exit(0)
-	
+		sflag=1
+		pdiff=0.05 
+		
 	#=======================================================================
 	# start cell-reassignment
 	# starting Kalman Filter --Expression /Time
@@ -1658,7 +1697,10 @@ def  main():
 		G1.ReAssign()
 		G1.updateGraph()
 		ACL_update=[sorted([item.ID for item in K.cells]) for K in G1.Nodes]
-		condition = ((ACL != ACL_update) and (lct < maxLoop))
+		if sflag!=1:
+			condition = ((ACL != ACL_update) and (lct < maxLoop))
+		else:	
+			condition=((ClusteringDifference(ACL,ACL_update)>pdiff) and (lct<maxLoop))
 		lct+=1
 		viz(scg_name,G1,output)
 	print("done!")

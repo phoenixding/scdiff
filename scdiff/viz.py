@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 import pdb,sys,os,json
+import warnings
+warnings.filterwarnings('ignore')
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap
 import pydiffmap.diffusion_map as pdm
+
 
 #-----------------------------------------------------------------------
 # export data ==>json
@@ -29,12 +32,12 @@ def GtoJson(G1,GL,dTD):
 	
 	# diffusion map 
 	dmk=min(len(xmatrix),10)
-	dfmap=pdm.DiffusionMap(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
-	dfmap_matrix=dfmap.fit_transform(xmatrix)
 	
-	
-	#pdb.set_trace()
-	
+	with warnings.catch_warnings():
+		warnings.simplefilter("ignore")
+		dfmap=pdm.DiffusionMap(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
+		dfmap_matrix=dfmap.fit_transform(xmatrix)
+		
 	CL=[]
 	for i in range(len(G1.Cells)):
 		jci=(G1.Cells[i]).__dict__
