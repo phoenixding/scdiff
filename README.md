@@ -8,7 +8,6 @@
 [![Build Status](https://travis-ci.org/phoenixding/scdiff.svg?branch=master)](https://travis-ci.org/phoenixding/scdiff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-
 # INTRODUCTION 
 <div style="text-align: justify"> 
 Most existing single-cell trajectory inference methods have relied primarily on the assumption that descendant cells are similar to their parents in terms of gene expression levels. 
