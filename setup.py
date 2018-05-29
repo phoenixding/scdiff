@@ -17,3 +17,4 @@ setup(  name='scdiff',
 			'Programming Language :: Python :: 3',
 		],
 		)
+		
