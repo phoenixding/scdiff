@@ -694,11 +694,12 @@ class Path:
                 G = self.getFC()
                 dFC = {item[0].upper(): item[1] for item in G}
                 etfID = [item[1] for item in self.etf]
-                [X, Y,U,D] = buildTrain(G, dTG, etfID,self.GL,FCUT)
-                LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
-                dR = {0: U, 1: D, 2: 0}
                 HGL = [item.upper() for item in self.GL]
+                dR={0:2,1:-2,2:0} 
                 try:
+                        [X, Y,U,D] = buildTrain(G, dTG, etfID,self.GL,FCUT)
+                        dR = {0: U, 1: D, 2: 0}
+                        LR = LogisticRegressionCV(penalty='l1', Cs=[1.5, 2, 3, 4, 5], solver='liblinear', multi_class='ovr')
                         LR.fit(X, Y)
                         CE = LR.coef_
                         petf = parseLR(self.etf, CE)
@@ -713,6 +714,7 @@ class Path:
                                 XX.append(xi)
                         YY = LR.predict(XX)
                         self.etf = petf
+                        #pdb.set_trace()
                 except:
                         YY = [0 if dFC[item] > FCUT else 1 if dFC[item] < -1 * FCUT else 2 for item in HGL]
                 YY = [dR[item] for item in YY]
