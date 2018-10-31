@@ -170,11 +170,12 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 scdiff takes the two required input files (-i/--input and -t/--tf_dna), two optional files (-k/--cluster, -e/--etfListFile) and a few other optional parameters. 
 
 * __-i/--input__  
+(<span style="color:red">Note: The gene names in the expression file must be consistent with those in [TF_DNA](tf_dna/Human_TF_targets.txt) file. If using the provided [TF_DNA](tf_dna/Human_TF_targets.txt) file, [gene symbols](https://ghr.nlm.nih.gov/about/gene-names-symbols) must be used to represent the genes in the expression file.</span>)  
 This specifies the single cell RNA-Seq expression data.  
 If the RNA-Seq data is not processed, the instruction about how to calculate expression based on RNA-Seq raw reads can be found in many other studies, e.g (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4728800/).
 For example, users can use Tophat + Cufflink to calculate the gene expression in terms of FPKM.  Please refer to corresponding tools for instructions. 
 Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM or TPM depending
-on what tools are used to precoess the RNA-Seq expression data.  
+on what tools are used to process the RNA-Seq expression data.  
 The input file has the following formatting requirements:
 	* __Header Row__  
 	First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
@@ -461,7 +462,9 @@ However, if we don't have any prior knowledge about the sub-populations within e
 $scdiff -i example.E -t example.tf_dna -k auto -o example_out -l True -s True
 ```
 
--i, -t, -k, -o parameters were discussed above. 
+-i, -t, -k, -o parameters were discussed above.   
+For very large dataset (e.g., more than 20k cell), it's recommended to filter genes with very low variance. 
+It significantly cuts down the the memory cost and running time. 
 
 * **-l/--large (optional)**  
 String, if specified as 'True' or '1', scdiff will use LargeType mode to improve the running efficiency (both memory and time).

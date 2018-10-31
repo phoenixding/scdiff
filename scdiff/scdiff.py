@@ -830,7 +830,7 @@ class Graph:
 		
 		RTD=TabFile(tfdna).read('\t') # dictionary to store the TF-DNA info
 		try:
-			TD=[[item[0].upper(),item[1].upper()] for item in RTD]
+			TD=[[item[0].upper(),item[1].upper()] for item in RTD if len(item)>1]
 		except:
 			print("check the format of input TF-DNA interaction file")
 			sys.exit(0)
