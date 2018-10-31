@@ -36,8 +36,7 @@ instructions.
 * Python packages dependencies:  
 -- scikit-learn   
 -- scipy  
--- numpy  
--- matplotlib  
+-- numpy   
 -- pydiffmap  
 -- imbalanced_learn  
 
