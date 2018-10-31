@@ -37,6 +37,7 @@ instructions.
 -- scikit-learn   
 -- scipy  
 -- numpy   
+-- matplotlib
 -- pydiffmap  
 -- imbalanced_learn  
 
