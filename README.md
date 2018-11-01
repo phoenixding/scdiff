@@ -68,7 +68,7 @@ installation fails.
 	```
 	use python3 instead of python in the above commands to install if using python3. 
 	
-* __Option 2: Install from Github__:    
+* __Option 2: Install from Github__ (recommended):    
 
 	python 2:  
 	```shell
