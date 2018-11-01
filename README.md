@@ -174,9 +174,16 @@ scdiff takes the two required input files (-i/--input and -t/--tf_dna), two opti
 This specifies the single cell RNA-Seq expression data.  
 If the RNA-Seq data is not processed, the instruction about how to calculate expression based on RNA-Seq raw reads can be found in many other studies, e.g (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4728800/).
 For example, users can use Tophat + Cufflink to calculate the gene expression in terms of FPKM.  Please refer to corresponding tools for instructions. 
-Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM or TPM depending
+Once we get the RNA-Seq gene expression, the expression data should be transformed to log space for example by log2(x+1) where x could represent the gene expression in terms of RPKM, FPKM,TPM, umi-count depending
 on what tools are used to process the RNA-Seq expression data.  
-The input file has the following formatting requirements:
+Note: For large expression datasets (e.g. >1Gb), it's recommended to filter the genes with very low variance to speed up and save memory. 
+We provided a script [utils/filterGenes.py](utils/filterGenes.py) in the utils folder for this purpose (please use "--help" parameter to show the usage information).
+Top 10,000 genes are enough for most cases as the expression of many genes is quite stable (OR all zeros/very small values for non-expressing genes) and thus non-informative (>80% agreement of the cell assignments with the results using all genes as tested on multiple datasets).  
+```
+//To keep the top 10,000 genes with the largest variance
+$ python filterGenes.py -i example/example.E -n 10000
+```
+The input file has the following formatting requirements:  
 	* __Header Row__  
 	First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
 	* __Data Rows__  
