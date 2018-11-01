@@ -127,9 +127,8 @@ class Clustering:
 		for T in self.KET:
 			CT=det[T]
 			X=np.array([item.E for item in CT])
-			pca=PCA(n_components=10)
+			pca=PCA(n_components=min(len(X),10))
 			X=pca.fit_transform(X)
-			#pdb.set_trace()
 			dTM[T]=X
 			print(T)
 		return dTM
