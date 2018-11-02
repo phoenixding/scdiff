@@ -257,6 +257,24 @@ You might need to unzip and re-format the file to satisfy the requirements. The 
   
 For other scdiff optional parameters, please refer to the [usage](#usage) section.   
 
+# RECOMMENDED PIPELINE
+Please follow the following steps to analyze the single-cell data. 
+* (1) Expression file Pre-processing (__MUST__):   
+Please convert the expression file into the format as described above. 
+For large dataset (e.g. >1Gb), please remove low variance genes using the provided [utils/filterGenes.py](utils/filterGenes.py) script. 
+Note: the expression __MUST__ be in log space. 
+
+* (2) Estimate number of Clusters K for each time point in a user-defined or semi-automatic way (__Not Required But Recommended__)  
+If users have prior knowledge about how many clusters K approximately (e.g. based on markers) for each time, please specify using the "-k config_file" parameter as described above. 
+If no prior knowledge is available, users can choose to estimate the K automatically or semi-automatically with the provided [utils/semiAutomaticK.py](utils/semiAutomaticK.py) script.   
+Although scdiff can estimate the number of Clusters K for each time point in a fully automatic way with "-k auto" option, but in many cases users are able to get better estimation 
+using their eyes with the help of the visualization (e.g., TSNE plot). semiAutomaticK.py script draws the TSNE plots to help users to determine possible number of clusters K for each time point. 
+Then users can run scdiff with the option: "-k config_file".  The TSNE plot will be output to a pdf file (*.tsne.pdf). 
+```
+$python semiAutomaticK.py -i example.E
+```
+* (3) Run scdiff as described in USAGE section. 
+
 # RESULTS AND VISUALIZATION
 
 The results are given under the specified directory. 
