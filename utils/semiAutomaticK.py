@@ -14,8 +14,8 @@ args = parser.parse_args()
 f=open(args.input,'r')
 lf=f.readlines()
 f.close()
-lf=[item.strip().split() for item in lf]
-times=[item[1] for item in lf]
+lf=[item.strip().split("\t") for item in lf]
+times=[item[1] for item in lf[1:]]
 dtimes=list(set(times))
 ex=[[float(k) for k in item[3:]] for item in lf[1:]]
 pca=PCA(n_components=50)
@@ -26,8 +26,13 @@ colors=[colors_list[dtimes.index(item)%len(colors_list)] for item in times]
 X=[item[0] for item in tex]
 Y=[item[1] for item in tex]
 
-for i in range(len(X)):
-	plt.scatter(X[i],Y[i],c=colors[i],label=times[i])
+
+#pdb.set_trace()
+for i in dtimes:
+	xi=[X[j] for j in range(len(X)) if times[j]==i]
+	yi=[Y[j] for j in range(len(Y)) if times[j]==i]
+	ci=[colors[j] for j in range(len(X)) if times[j]==i]
+	plt.scatter(xi,yi,c=ci,label=i)
 plt.legend()
 plt.savefig("%s.tsne.pdf"%(args.input),dpi=300)
 

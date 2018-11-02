@@ -273,6 +273,8 @@ Then users can run scdiff with the option: "-k config_file".  The TSNE plot will
 ```
 $python semiAutomaticK.py -i example.E
 ```
+![images/MBE2.tsne.pdf](images/MBE2.tsne.png)
+
 * (3) Run scdiff as described in USAGE section. 
 
 # RESULTS AND VISUALIZATION
