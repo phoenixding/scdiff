@@ -294,7 +294,7 @@ original expression file:
 	...
 	c5	1	type2	3.0	1.0	2.0
 	```
-->updated expression file with a specified root:  
+->updated expression file with a specified root (specify c1 as the root):  
 	```
 	cell_id	time	label	gene1	gene2	gene3
 	root	0	type1	1.0	2.0	3.0
