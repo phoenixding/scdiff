@@ -312,7 +312,12 @@ of the studied process (e.g. number of clusters K, root cells).  For better resu
 specifying the parameters (e.g, -k or virtual ancestor cells) with the knowledge learned from initial results.  
 For example, the time point information is used in our analysis but it's not informative and often misleading in some cases 
 (measurement time is not correlated with the cell states at all). If this is indicated in the initial analysis, it's recommended 
-to re-run the program without time-point information (use the same time points for all cells). In this case, only expression
+to re-run the program without time-point information (use the same time points for all cells). Users can use the provided [utils/filterGenes.py](utils/filterGenes.py)
+to set the time point of all cells to a given number. 
+```
+$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>
+```
+In this case, only expression
 information will be used.  
 
 	```
