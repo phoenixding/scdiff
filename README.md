@@ -181,7 +181,7 @@ We provided a script [utils/filterGenes.py](utils/filterGenes.py) in the utils f
 Top 10,000 genes are enough for most cases as the expression of many genes is quite stable (OR all zeros/very small values for non-expressing genes) and thus non-informative (>80% agreement of the cell assignments with the results using all genes as tested on multiple datasets).  
 	```
 	//To keep the top 10,000 genes with the largest variance
-	$ python filterGenes.py -i example/example.E -n 10000
+	$ python filterGenes.py -i example/example.E -n 10000 >updated_ex.tsv
 	```
 	The input file has the following formatting requirements: 
 	* __Header Row__ 
@@ -292,7 +292,7 @@ original expression file:
 	c1	1	type1	1.0	2.0	3.0
 	c2	1	type2	2.0	1.0	3.0
 	...
-	c5	1	type2	3.0	1.0	2.0
+	c5	2	type2	3.0	1.0	2.0
 	```
 ->updated expression file with a specified root (specify c1 as the root):  
 	```
@@ -300,12 +300,28 @@ original expression file:
 	root	0	type1	1.0	2.0	3.0
 	c2	1	type2	2.0	1.0	3.0
 	...
-	c5	1	type2	3.0	1.0	2.0
+	c5	2	type2	3.0	1.0	2.0
 	```
 If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
 For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
 ![images/diffusion_map.png](images/diffusion_map.png) 
-* (4) Run scdiff as described in USAGE section. 
+* (4) Run scdiff as described in USAGE section (__MUST__)
+* (5) Re-visit the results and re-run the program if needed (__Not Required But Highly Recommended__).  
+With the generated visualizations in the "CELL Plots" section and other results, users will have a better understanding
+of the studied process (e.g. number of clusters K, root cells).  For better results, users can choose to re-run the program by
+specifying the parameters (e.g, -k or virtual ancestor cells) with the knowledge learned from initial results.  
+For example, the time point information is used in our analysis but it's not informative and often misleading in some cases 
+(measurement time is not correlated with the cell states at all). If this is indicated in the initial analysis, it's recommended 
+to re-run the program without time-point information (use the same time points for all cells). In this case, only expression
+information will be used.  
+
+	```
+	cell_id	time	label	gene1	gene2	gene3
+	c1	1	type1	1.0	2.0	3.0
+	c2	1	type2	2.0	1.0	3.0
+	...
+	c5	1	type2	3.0	1.0	2.0
+	```
 
 # RESULTS AND VISUALIZATION
 
@@ -513,7 +529,6 @@ However, if we don't have any prior knowledge about the sub-populations within e
 :-k auto.
 
 **3) Run scdiff on large single cell dataset** 
-
 
 ```shell
 $scdiff -i example.E -t example.tf_dna -k auto -o example_out -l True -s True
