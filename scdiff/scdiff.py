@@ -514,7 +514,6 @@ class Cluster:
 		mut=self.mT[0]
 		smt=self.rT[0]
 		P=((-0.5) *math.log(2*math.pi*smt)) - ((cell.dta - mut) ** 2 / (2 * smt))
-		#P=P*len(self.GL)
 		return P
 
 	# ------------------------------------------------------------------------
@@ -1232,7 +1231,6 @@ class Graph:
 		# re-assign
 		AS = []
 		Tlli = 0
-		#K=0.05 #  mixture probability constant.
 		K=0.01 #  mixture probability constant.
 		for i in self.Cells:
 			pi=[j.getAssignProbability(i,self.W,K) for j in self.Nodes]
@@ -1684,7 +1682,7 @@ def  main():
 	sflag=0
 	if (args.speedup=='1') or (args.speedup=='True'):
 		sflag=1
-		pdiff=0.05 
+		pdiff=0.1 
 		
 	#=======================================================================
 	# start cell-reassignment
