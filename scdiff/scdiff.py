@@ -138,7 +138,8 @@ class Clustering:
 		#return {14.0:1,16.0:2,18.0:4}
 		try:
 				KCF = TabFile(kc).read('\t')
-				dCK={float(item[0]):int(item[1]) for item in KCF}
+				KCF = [item for item in KCF if len(item)>=2]
+                                dCK={float(item[0]):int(item[1]) for item in KCF}
 		except:
 				dCK = self.determineK(K0=1)
 		return dCK
