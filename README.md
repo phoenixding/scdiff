@@ -275,7 +275,36 @@ $python semiAutomaticK.py -i example.E
 ```
 ![images/MBE2.tsne.pdf](images/MBE2.tsne.png)
 
-* (3) Run scdiff as described in USAGE section. 
+* (3) Specify the root cells (__Not Required But Recommended__)  
+By default, the program uses all the cells at the first time point as the starting root. 
+This was based on the assumption that the cells in the first point are very similar (not well-differentiated yet) and serve as the 
+ancestors for all the remaining cells.  If this assumption is not valid, users can use -a 1 to specify a virtual ancestor. 
+The expression of such virtual ancestor is the average expression of the cells at the first time point. 
+In many cases, users have prior knowledge of the starting cell types (e.g., based on markers). 
+Under such scenario, users __can add choose one/ a few cells (e.g., with a very high expression of the marker gene) as the virtual ancestor time point__.
+The virtual ancestor time point should be FirstTimePoint(Integer)-1. For example, if the first time point is 14, the virtual ancestor time point would be 13. 
+to the expression file.   
+For example:  
+original expression file:  
+```
+cell_id	time	label	gene1	gene2	gene3
+c1	1	type1	1.0	2.0	3.0
+c2	1	type2	2.0	1.0	3.0
+...
+c5	1	type2	3.0	1.0	2.0
+```
+->updated expression file with a specified root:  
+```
+cell_id	time	label	gene1	gene2	gene3
+root	0	type1	1.0	2.0	3.0
+c2	1	type2	2.0	1.0	3.0
+...
+c5	1	type2	3.0	1.0	2.0
+```
+If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
+For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
+![images/diffusion_map.png](images/diffusion_map.png) 
+* (4) Run scdiff as described in USAGE section. 
 
 # RESULTS AND VISUALIZATION
 

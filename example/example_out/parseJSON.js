@@ -52,7 +52,7 @@
 					xData.push(cell.TE);
 				}
 				xLabels.push(inode_id);
-				xTypeLabels.push(cell.typeLabel);
+				xTypeLabels.push(cell.ID);
 			}
 		}
 		scviz.plots.scatterplot(xData,xLabels,xTypeLabels);
