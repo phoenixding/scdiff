@@ -179,11 +179,11 @@ on what tools are used to process the RNA-Seq expression data.
 Note: For large expression datasets (e.g. >1Gb), it's recommended to filter the genes with very low variance to speed up and save memory. 
 We provided a script [utils/filterGenes.py](utils/filterGenes.py) in the utils folder for this purpose (please use "--help" parameter to show the usage information).
 Top 10,000 genes are enough for most cases as the expression of many genes is quite stable (OR all zeros/very small values for non-expressing genes) and thus non-informative (>80% agreement of the cell assignments with the results using all genes as tested on multiple datasets).  
-```
-//To keep the top 10,000 genes with the largest variance
-$ python filterGenes.py -i example/example.E -n 10000
-```
-The input file has the following formatting requirements:    
+	```
+	//To keep the top 10,000 genes with the largest variance
+	$ python filterGenes.py -i example/example.E -n 10000
+	```
+	The input file has the following formatting requirements: 
 	* __Header Row__ 
 	First 3 columns are "Cells","Time","Label" and the remaining columns are gene names.   
 	* __Data Rows__    
@@ -199,7 +199,7 @@ The input file has the following formatting requirements:
 	
 	Example input:     
 	[example.E](example/example.E)
-
+	
 * __-t/--tf_dna__  
 This specifies the TF-gene interaction data.  In other words, it specifies the TF targets. 
 Under the tf_dna directory, we provided a [human TF-gene interaction file](tf_dna/Human_TF_targets.txt) and a [mouse TF-gene interaction file](tf_dna/Mouse_TF_targets.txt) inferred using the strategy in our previous study (https://www.ncbi.nlm.nih.gov/pubmed/20219943). 
