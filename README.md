@@ -287,21 +287,21 @@ The virtual ancestor time point should be FirstTimePoint(Integer)-1. For example
 to the expression file.   
 For example:  
 original expression file:  
-```
-cell_id	time	label	gene1	gene2	gene3
-c1	1	type1	1.0	2.0	3.0
-c2	1	type2	2.0	1.0	3.0
-...
-c5	1	type2	3.0	1.0	2.0
-```
+	```
+	cell_id	time	label	gene1	gene2	gene3
+	c1	1	type1	1.0	2.0	3.0
+	c2	1	type2	2.0	1.0	3.0
+	...
+	c5	1	type2	3.0	1.0	2.0
+	```
 ->updated expression file with a specified root:  
-```
-cell_id	time	label	gene1	gene2	gene3
-root	0	type1	1.0	2.0	3.0
-c2	1	type2	2.0	1.0	3.0
-...
-c5	1	type2	3.0	1.0	2.0
-```
+	```
+	cell_id	time	label	gene1	gene2	gene3
+	root	0	type1	1.0	2.0	3.0
+	c2	1	type2	2.0	1.0	3.0
+	...
+	c5	1	type2	3.0	1.0	2.0
+	```
 If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
 For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
 ![images/diffusion_map.png](images/diffusion_map.png) 
