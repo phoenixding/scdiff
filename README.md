@@ -268,7 +268,7 @@ Note: the expression __MUST__ be in log space.
 * (2) Estimate number of Clusters K for each time point in a user-defined or semi-automatic way (__Not Required But Recommended__)  
 If users have prior knowledge about how many clusters K approximately (e.g. based on markers) for each time, please specify using the "-k config_file" parameter as described above. 
 If no prior knowledge is available, users can choose to estimate the K automatically or semi-automatically with the provided [utils/semiAutomaticK.py](utils/semiAutomaticK.py) script.   
-Although scdiff can estimate the number of Clusters K for each time point in a fully automatic way with "-k auto" option, but in many cases users are able to get better estimation 
+Although scdiff can estimate the number of Clusters K for each time point in a fully automatic way with "-k auto" option, but it's very time-consuming and in many cases users are able to get better estimation 
 using their eyes with the help of the visualization (e.g., TSNE plot). semiAutomaticK.py script draws the TSNE plots to help users to determine possible number of clusters K for each time point. 
 Then users can run scdiff with the option: "-k config_file".  The TSNE plot will be output to a pdf file (*.tsne.pdf). 
 ```
@@ -282,9 +282,9 @@ This was based on the assumption that the cells in the first point are very simi
 ancestors for all the remaining cells.  If this assumption is not valid, users can use -a 1 to specify a virtual ancestor. 
 The expression of such virtual ancestor is the average expression of the cells at the first time point. 
 In many cases, users have prior knowledge of the starting cell types (e.g., based on markers). 
-Under such scenario, users __can add choose one/ a few cells (e.g., with a very high expression of the marker gene) as the virtual ancestor time point__.
-The virtual ancestor time point should be FirstTimePoint(Integer)-1. For example, if the first time point is 14, the virtual ancestor time point would be 13. 
-to the expression file.   
+Under such scenario, users __can add choose one/ a few cells (e.g., with a very high expression of the marker gene) as the user defined root.
+The root time point should be FirstTimePoint(Integer)-1. For example, if the first time point is 14, the root time point would be 13. 
+to the expression file.   Note, don't use "-a 1" parameter if a user-defined root is added to the expression file. 
 For example:  
 original expression file:  
 	```
@@ -304,19 +304,24 @@ original expression file:
 	```
 If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
 For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
-![images/diffusion_map.png](images/diffusion_map.png) 
+Users can also use the diffusion map visualization in the CELL PLOT section of the previous scdiff running results.   
+![images/diffusion_map.png](images/diffusion_map.png).
 * (4) Run scdiff as described in USAGE section (__MUST__)
 * (5) Re-visit the results and re-run the program if needed (__Not Required But Highly Recommended__).  
 With the generated visualizations in the "CELL Plots" section and other results, users will have a better understanding
-of the studied process (e.g. number of clusters K, root cells).  For better results, users can choose to re-run the program by
-specifying the parameters (e.g, -k or virtual ancestor cells) with the knowledge learned from initial results.  
-For example, the time point information is used in our analysis but it's not informative and often misleading in some cases 
+of the studied process (e.g. number of clusters K, root cells). For example, the time point information is used in our analysis. However, it's not informative and often misleading in some cases 
 (measurement time is not correlated with the cell states at all). If this is indicated in the initial analysis, it's recommended 
 to re-run the program without time-point information (use the same time points for all cells). Users can use the provided [utils/filterGenes.py](utils/filterGenes.py)
 to set the time point of all cells to a given number. 
-```
-$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>
-```
+	```
+	$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>
+	```
+For better results, users can choose to re-run the program by
+specifying the the following parameters with the knowledge learned from initial results.   
+	__(i)__  -k config_file  
+	Specifying Number of clusters for each time.  
+	__(ii)__ -i UPDATED_ex_file  
+	Adding the user-defined root cell(s) to the expression file. 
 In this case, only expression
 information will be used.  
 
