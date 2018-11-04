@@ -294,7 +294,9 @@ original expression file:
 	...
 	c5	2	type2	3.0	1.0	2.0
 	```
-->updated expression file with a specified root (specify c1 as the root):  
+	
+	->updated expression file with a specified root (specify c1 as the root):  
+	
 	```
 	cell_id	time	label	gene1	gene2	gene3
 	root	0	type1	1.0	2.0	3.0
@@ -302,10 +304,10 @@ original expression file:
 	...
 	c5	2	type2	3.0	1.0	2.0
 	```
-If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
-For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
-Users can also use the diffusion map visualization in the CELL PLOT section of the previous scdiff running results.   
-![images/diffusion_map.png](images/diffusion_map.png).
+	If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
+	For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
+	Users can also use the diffusion map visualization in the CELL PLOT section of the previous scdiff running results.   
+	![images/diffusion_map.png](images/diffusion_map.png).
 * (4) Run scdiff as described in USAGE section (__MUST__)
 * (5) Re-visit the results and re-run the program if needed (__Not Required But Highly Recommended__).  
 With the generated visualizations in the "CELL Plots" section and other results, users will have a better understanding
@@ -317,7 +319,7 @@ to set the time point of all cells to a given number.
 	$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>
 	```
 	For better results, users can choose to re-run the program by
-	specifying the the following parameters with the knowledge learned from initial results.   
+	specifying the the following parameters with the knowledge learned from initial results.     
 		__(i)__  -k config_file  
 		Specifying Number of clusters for each time.  
 		__(ii)__ -i UPDATED_ex_file  
