@@ -316,14 +316,14 @@ to set the time point of all cells to a given number.
 	```
 	$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>
 	```
-For better results, users can choose to re-run the program by
-specifying the the following parameters with the knowledge learned from initial results.   
-	__(i)__  -k config_file  
-	Specifying Number of clusters for each time.  
-	__(ii)__ -i UPDATED_ex_file  
-	Adding the user-defined root cell(s) to the expression file. 
-In this case, only expression
-information will be used.  
+	For better results, users can choose to re-run the program by
+	specifying the the following parameters with the knowledge learned from initial results.   
+		__(i)__  -k config_file  
+		Specifying Number of clusters for each time.  
+		__(ii)__ -i UPDATED_ex_file  
+		Adding the user-defined root cell(s) to the expression file. 
+	In this case, only expression
+	information will be used.  
 
 	```
 	cell_id	time	label	gene1	gene2	gene3
