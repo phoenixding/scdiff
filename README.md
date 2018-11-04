@@ -323,10 +323,8 @@ to set the time point of all cells to a given number.
 		__(i)__  -k config_file  
 		Specifying Number of clusters for each time.  
 		__(ii)__ -i UPDATED_ex_file  
-		Adding the user-defined root cell(s) to the expression file. 
-	In this case, only expression
-	information will be used.  
-
+		Adding the user-defined root cell(s) to the expression file and/or ignoring the time point inforamtion of cells. 
+		
 	```
 	cell_id	time	label	gene1	gene2	gene3
 	c1	1	type1	1.0	2.0	3.0
