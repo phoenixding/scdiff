@@ -139,7 +139,7 @@ class Clustering:
 		try:
 				KCF = TabFile(kc).read('\t')
 				KCF = [item for item in KCF if len(item)>=2]
-                                dCK={float(item[0]):int(item[1]) for item in KCF}
+				dCK={float(item[0]):int(item[1]) for item in KCF}
 		except:
 				dCK = self.determineK(K0=1)
 		return dCK
@@ -1683,7 +1683,7 @@ def  main():
 	sflag=0
 	if (args.speedup=='1') or (args.speedup=='True'):
 		sflag=1
-		pdiff=0.1 
+		pdiff=0.2 
 		
 	#=======================================================================
 	# start cell-reassignment
