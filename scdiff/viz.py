@@ -313,7 +313,7 @@ def viz(scg_name,G1,output):
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 		<script src="https://www.lactame.com/lib/ml/2.2.0/ml.min.js"></script>
-		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
 		<script src="parseJSON.js"></script>
 		<script type="text/javascript" src="%s"></script>
