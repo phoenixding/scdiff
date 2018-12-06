@@ -9,7 +9,6 @@ import matplotlib.colors as colors
 #colors_list = list(colors._colors_full_map.values())
 colors_list=list(colors.CSS4_COLORS.values())
 
-
 parser=argparse.ArgumentParser(description="determine K using semi-automatic way")
 parser.add_argument('-i','--input',required=True,help='input single cell RNA-seq expression data')
 args = parser.parse_args()
