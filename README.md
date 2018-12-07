@@ -178,7 +178,7 @@ Once we get the RNA-Seq gene expression, the expression data should be transform
 on what tools are used to process the RNA-Seq expression data.  
 Note: For large expression datasets (e.g. >1Gb), it's recommended to filter the genes with very low variance to speed up and save memory. 
 We provided a script [utils/filterGenes.py](utils/filterGenes.py) in the utils folder for this purpose (please use "--help" parameter to show the usage information).
-Top 10,000 genes are enough for most cases as the expression of many genes is quite stable (OR all zeros/very small values for non-expressing genes) and thus non-informative (>80% agreement of the cell assignments with the results using all genes as tested on multiple datasets).  
+Top 5000-10,000 genes are enough for most cases as the expression of many genes is quite stable (OR all zeros/very small values for non-expressing genes) and thus non-informative (>80% agreement of the cell assignments with the results using all genes as tested on multiple datasets).  
 	```
 	//To keep the top 10,000 genes with the largest variance
 	$ python filterGenes.py -i example/example.E -n 10000 >updated_ex.tsv
