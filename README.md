@@ -34,12 +34,12 @@ If not, please check [https://www.python.org/downloads/](https://www.python.org/
 instructions. 
 
 * Python packages dependencies:  
--- scikit-learn >=0.20  
--- scipy >=0.13.3
--- numpy >=1.8.2
--- matplotlib  >=2.2.3
--- pydiffmap >=0.1.1 
--- imbalanced_learn >=0.4.2  
+-- scikit-learn >=0.20    
+-- scipy >=0.13.3  
+-- numpy >=1.8.2  
+-- matplotlib  >=2.2.3  
+-- pydiffmap >=0.1.1  
+-- imbalanced_learn >=0.4.2   
 
 The python setup.py script (or pip) will try to install these packages automatically.
 However, please install them manually if, by any reason, the automatic 
