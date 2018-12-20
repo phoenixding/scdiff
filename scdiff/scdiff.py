@@ -1681,17 +1681,19 @@ def  main():
 	viz(scg_name,G1,output)
 	
 	sflag=0
+	maxLoop=10
+	
 	if (args.speedup=='1') or (args.speedup=='True'):
 		sflag=1
-		pdiff=0.2 
-		
+		pdiff=0.2
+		maxLoop=4
 	#=======================================================================
 	# start cell-reassignment
 	# starting Kalman Filter --Expression /Time
 	#-----------------------------------------------------------------------
 	#Initial parameters for Kalman Filter -Time
 	condition=True
-	maxLoop=10
+	
 	lct=0
 	while condition:
 		ACL=[sorted([item.ID for item in K.cells]) for K in G1.Nodes]
