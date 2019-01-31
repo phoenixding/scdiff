@@ -10,7 +10,7 @@ setup(  name='scdiff',
 		license='MIT',
 		packages=['scdiff'],
 		package_data={'scdiff':['img/logo.gif','tfdata/HumanTFList.txt']},
-		entry_points={'console_scripts':['scdiff=scdiff.scdiff:main','scdiff_gui=scdiff.scdiff_gui:main']},
+		entry_points={'console_scripts':['scdiff=scdiff.scdiff:main']},
 		install_requires=['scipy>0.13.3','numpy>1.8.2','scikit-learn>=0.20','cloudpickle>0.5,<0.6','pydiffmap','matplotlib<3.0','imbalanced_learn'],
 		classifiers=[
 			'License :: OSI Approved :: MIT License',

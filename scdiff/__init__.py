@@ -1,6 +1,6 @@
 import pdb,sys,os
 
-__all__=['ClusteringMetric','File','KF2','StatTest','scdiff','scdiff_gui','Distance','viz']
+__all__=['ClusteringMetric','File','KF2','StatTest','scdiff','Distance','viz']
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
 
