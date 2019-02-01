@@ -747,15 +747,14 @@ class Path:
                 return Q
 
 class Graph:
-	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1,etfile=None):
+	def __init__(self,Cells,tfdna,kc,largeType=None,dsync=None,virtualAncestor=None,fChangeCut=1,etfile=None,spcut=0.05):
 		self.Cells=Cells
 		self.largeType=largeType
 		self.dsync=dsync
 		self.virtualAncestor=virtualAncestor
 		self.fChangeCut=fChangeCut
 		self.etfile=etfile
-		
-		
+		self.spcut=spcut	
 		#Current mode requires an ancestor node (only 1 cluster). If this is not case, virtual ancestor node is needed (The mean expression of the first time point)
 		if (virtualAncestor=='True' or virtualAncestor=='1'):
 			va=buildVirtualAncestor(self.Cells)
@@ -881,16 +880,23 @@ class Graph:
 	def splitTime(self):
 		# -----------------------------------------
 		print("time adjustment...")
-		def checkNeighbors1(XX):
-			cut = 0.1
-			BreakP = []
-			for i in range(len(XX) - 1):
-				pvr = ranksums(XX[i].DTA, XX[i + 1].DTA)[-1]
-				if pvr < cut:
-					BreakP.append(i + 1)
-
+		def checkNeighbors1(XX,ANS):
+			ANSDTA=sum(ANS.DTA)/len(ANS.DTA)
+			pvcut=self.spcut  #p-value cutoff 0.5
+			dfcut=0.05  # 5% difference of STA average (normalized)
+			dfcut_strong=0.1 # 10% difference of STA average-> strong cutoff
+			ASTA=[sum(item.DTA)/len(item.DTA) for item in XX]
+			ASTA=[abs(ANSDTA-item)/(ANSDTA-min(ASTA)) for item in ASTA] # normalization
+			BreakP=[]
+			for i in range(len(XX)-1):
+				pvi=ranksums(XX[i].DTA,XX[i+1].DTA)[-1]
+				dfi=ASTA[i+1]-ASTA[i]
+				if ((pvi<pvcut) and (dfi>dfcut)) or (dfi>dfcut_strong):
+					BreakP.append(i+1)
+					
 			CC = []
 			st = 0
+			BreakP.sort()
 			for i in BreakP:
 				end = i
 				CC.append(XX[st:end])
@@ -902,7 +908,8 @@ class Graph:
 			pv=[]
 			df=[]
 			ANSDTA=sum(ANS.DTA)/len(ANS.DTA)
-			pvcut=0.05  #p-value cutoff 0.5
+			#pvcut=0.05  #p-value cutoff 0.5
+			pvcut=self.spcut
 			dfcut=0.1  # 10% difference of STA average (normalized)
 			ASTA=[sum(item.DTA)/len(item.DTA) for item in XX]
 
@@ -918,7 +925,6 @@ class Graph:
 			tr=[[tr[i],i] for i in range(len(tr))]
 			tr.sort()
 			KET=self.clustering.KET
-			[NCL,NCH]=[len(KET)-2,(len(KET)-1)*2-1]                     # candidates for number of cuts
 			
 			NCL=max(0,len(KET)-1)
 			NCH=int(math.log(len(XX)+1,2))                               # max # of level (determined by the maximal # of binary splits)
@@ -1598,7 +1604,7 @@ def  main():
 	parser.add_argument('-s','--speedup',required=False, help='(1/None), Optional, if set as 1, scdiff will speedup the running by reducing the iteration times.')
 	parser.add_argument('-d','--dsync',required=False,help='(1/None), Optional, if set as 1, the cell synchronization will be disabled. The cell capture time will be used directly. ' +
                                                                'This option is recommended when the users believe that the cells captured at the same time are mostly at similar differentiation stage.')
-	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, By default, scidff uses the first time point as the ancestor for all following time points. ' +
+	parser.add_argument('-a','--virtualAncestor',required=False,help='(1/None), Optional, by default, scidff uses the first time point as the ancestor for all following time points. ' +
                                                                          'It is recommended to use this option if users believe that the cells at the first time points are already well differentiated and there ' +
                                                                          'exits at least 2 clusters/sub-types at the first time point. To enable this option, set it as 1.')
 	parser.add_argument("-f",'--log2foldchangecut',required=False, default=1, help='Float, Optional, by default, scdiff uses log2 Fold change 1(~2^1=2) as the cutoff for differential genes (together with t-test p-value cutoff 0.05). '+ 
@@ -1606,9 +1612,12 @@ def  main():
 	
 	parser.add_argument("-e",'--etfListFile',required=False,help='String, Optional, by default, scdiff recognizes 1.6k TFs (we collected in human and mouse).  Users are able to provide a customized list of TFs instead using this option. '+
 												'It specifies the path to the TF list file, in which each line is a TF name.')
-	
+	parser.add_argument("--spcut",required=False,default=0.05, help='Float, Optional, by default, scdiff uses p-value=0.05 as the cutoff to tell whether the DistanceToAncestor (DTA) of clusters are significantly different. '+
+												'Clusters with similar DTA will be placed in the same level.')
+													
+													
+										
 	args=parser.parse_args()
-
 	scg=args.input
 	kc=args.clusters
 	output=args.output
@@ -1617,6 +1626,7 @@ def  main():
 	dsync=args.dsync
 	virtualAncestor=args.virtualAncestor
 	etf=args.etfListFile
+	spcut=args.spcut
 	
 	#pdb.set_trace()
 	
@@ -1625,6 +1635,11 @@ def  main():
 	except:
 		print("Error! log2foldchangecut (-f) must be a float, please check your input.")
 		sys.exit(0)
+
+	try:
+		spcut=float(spcut)
+	except:
+		print("Error! --spcut must be a float, please check your input")
 		
 	#pdb.set_trace()
 	#-----------------------------------------------------------------------
@@ -1670,7 +1685,7 @@ def  main():
 			sys.exit(0)
 	#=======================================================================
 	# 3): Clustering starts here!
-	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor,fChangeCut,etf)
+	G1=Graph(AllCells,tfdna,kc,largeType,dsync,virtualAncestor,fChangeCut,etf,spcut)
 
 	#========================================================================
 	#drawing graphs

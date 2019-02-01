@@ -98,8 +98,9 @@ version of python2 (e.g. via [Anocanda](https://anaconda.org/)) if they prefer t
 # USAGE
 
 ```shell
-usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l LargeType] 
-                   [-d DSYNC][-a VIRTUALANCESTOR]
+scdiff.py [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-l LARGE]
+                 [-s SPEEDUP] [-d DSYNC] [-a VIRTUALANCESTOR]
+                 [-f LOG2FOLDCHANGECUT] [-e ETFLISTFILE] [--spcut SPCUT]
 
 	-h, --help            show this help message and exit
 
@@ -163,6 +164,14 @@ usage: scdiff [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-s SPEEDUP] [-l Lar
 						which each line is a TF name. Here, it does not require 
 						the targets information for the TFs, which will be used to infer
 						eTFs (TFs predicted based on the expression of themselves instead of the their targets).
+						
+	--spcut SPCUT       Float, optional
+						By default, scdiff uses p-value=0.05
+                        as the cutoff to tell whether the DistanceToAncestor
+                        (DTA) of clusters are significantly different.
+                        Clusters with similar DTA will be placed in the same
+                        level.
+
                         
 ```
 # INPUTS AND PRE-PROCESSING
@@ -282,9 +291,9 @@ This was based on the assumption that the cells in the first point are very simi
 ancestors for all the remaining cells.  If this assumption is not valid, users can use -a 1 to specify a virtual ancestor. 
 The expression of such virtual ancestor is the average expression of the cells at the first time point. 
 In many cases, users have prior knowledge of the starting cell types (e.g., based on markers). 
-Under such scenario, users __can add choose one/ a few cells (e.g., with a very high expression of the marker gene) as the user defined root.
+Under such scenario, users can add choose one/ a few cells (e.g., with a very high expression of the marker genes) as the user defined root to the expression file.  
 The root time point should be FirstTimePoint(Integer)-1. For example, if the first time point is 14, the root time point would be 13. 
-to the expression file.   Note, don't use "-a 1" parameter if a user-defined root is added to the expression file. 
+Note, don't use "-a 1" parameter if a user-defined root is added to the expression file. 
 For example:  
 original expression file:  
 	```
@@ -304,16 +313,16 @@ original expression file:
 	...
 	c5	2	type2	3.0	1.0	2.0
 	```
-	If this is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
+	If there is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
 	For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
-	Users can also use the diffusion map visualization in the CELL PLOT section of the previous scdiff running results.   
+	Users can also use the diffusion map visualization in the CELL PLOT section from the scdiff running results.   
 	![images/diffusion_map.png](images/diffusion_map.png).
 * (4) Run scdiff as described in USAGE section (__MUST__)
 * (5) Re-visit the results and re-run the program if needed (__Not Required But Highly Recommended__).  
 With the generated visualizations in the "CELL Plots" section and other results, users will have a better understanding
 of the studied process (e.g. number of clusters K, root cells). For example, the time point information is used in our analysis. However, it's not informative and often misleading in some cases 
-(measurement time is not correlated with the cell states at all). If this is indicated in the initial analysis, it's recommended 
-to re-run the program without time-point information (use the same time points for all cells). Users can use the provided [utils/filterGenes.py](utils/filterGenes.py)
+(in which the measurement time is not correlated with the cell states at all). If this is indicated in the initial analysis, it's recommended 
+to re-run the program without using time-point information (use the same time points for all cells). Users can use the provided [utils/filterGenes.py](utils/filterGenes.py)
 to set the time point of all cells to a given number. 
 	```
 	$python filterGenes.py -i <ex_file>  -n <number_of_top_genes_for_analysis> --setime <time_point>

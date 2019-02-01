@@ -106,6 +106,9 @@ def viz(scg_name,G1,output):
 	css_template="""
 	
 	
+	
+	
+	
 	body{
 		width:1600px;
 	}
@@ -227,7 +230,7 @@ def viz(scg_name,G1,output):
 	  
 	}
 	#globalconfig.menu-item ul{
-		height:203px;
+		height:223px;
 	}
 	#downloadconfig.menu-item ul{
 		height:240px;
@@ -297,6 +300,7 @@ def viz(scg_name,G1,output):
 	}
 	
 	
+	
 	"""
 
 	#-----------------------------------------------------------------------
@@ -353,6 +357,8 @@ def viz(scg_name,G1,output):
 								<input type="color" id="bgcolor" value="#333333"><br>
 								<input type="submit" onclick="scviz.config.settextcolor('textcolor')" value="Set Text Color" title="change/set the color of the text">
 								<input type="color" id="textcolor" value="#ffffff"><br>
+								<input type="submit" onclick="scviz.config.settextsize('textsize')" value="Set Text Size" title="change/set the size of the text">
+								<input type="text" id="textsize" value="10"> <br>
 								<input type="submit" onclick="scviz.config.setpathcolor('pathcolor')" value="Set Edge Color" title="change/set the color of the edge">
 								<input type="color" id="pathcolor" value="#ffffff">
 							</li>
@@ -708,7 +714,7 @@ def viz(scg_name,G1,output):
 
 		nodeEnter.append("circle")
 		  .attr("r", 16)
-		  .attr("fill","#fff")
+		  .attr("fill","#000")
 		  .attr("stroke","steelblue")
 		  .attr("stroke-width","3px")
 		  .on("mouseover",inNode)  
@@ -797,6 +803,27 @@ def viz(scg_name,G1,output):
 			.attr("fill",textfontcolor);
 			
 		},
+		
+		settextsize: function(textsizeid){
+			var size=document.getElementById(textsizeid).value;
+			textsize=size;
+			d3.selectAll(".nodetext")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".TFText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".RTFText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".DEText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+		},
+		
 		setpathcolor: function(pathcolorid){
 			var color=document.getElementById(pathcolorid).value;
 			pathcolor=color;

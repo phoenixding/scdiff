@@ -10,7 +10,7 @@
 		<link rel="stylesheet" type="text/css" href="style.css">
 		<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 		<script src="https://www.lactame.com/lib/ml/2.2.0/ml.min.js"></script>
-		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
 		<script src="parseJSON.js"></script>
 		<script type="text/javascript" src="example.E.json"></script>
@@ -50,6 +50,8 @@
 								<input type="color" id="bgcolor" value="#333333"><br>
 								<input type="submit" onclick="scviz.config.settextcolor('textcolor')" value="Set Text Color" title="change/set the color of the text">
 								<input type="color" id="textcolor" value="#ffffff"><br>
+								<input type="submit" onclick="scviz.config.settextsize('textsize')" value="Set Text Size" title="change/set the size of the text">
+								<input type="text" id="textsize" value="10"> <br>
 								<input type="submit" onclick="scviz.config.setpathcolor('pathcolor')" value="Set Edge Color" title="change/set the color of the edge">
 								<input type="color" id="pathcolor" value="#ffffff">
 							</li>

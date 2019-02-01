@@ -260,7 +260,7 @@
 
 		nodeEnter.append("circle")
 		  .attr("r", 16)
-		  .attr("fill","#fff")
+		  .attr("fill","#000")
 		  .attr("stroke","steelblue")
 		  .attr("stroke-width","3px")
 		  .on("mouseover",inNode)  
@@ -349,6 +349,27 @@
 			.attr("fill",textfontcolor);
 			
 		},
+		
+		settextsize: function(textsizeid){
+			var size=document.getElementById(textsizeid).value;
+			textsize=size;
+			d3.selectAll(".nodetext")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".TFText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".RTFText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+			d3.select("svg").selectAll(".DEText")
+			.selectAll("tspan")
+			.style("font-size",textsize);
+			
+		},
+		
 		setpathcolor: function(pathcolorid){
 			var color=document.getElementById(pathcolorid).value;
 			pathcolor=color;
