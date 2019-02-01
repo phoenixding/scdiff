@@ -169,8 +169,8 @@ scdiff.py [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-l LARGE]
 						By default, scdiff uses p-value=0.05
 						as the cutoff to tell whether the DistanceToAncestor
 						(DTA) of clusters are significantly different.
-                        Clusters with similar DTA will be placed in the same
-                        level.
+						Clusters with similar DTA will be placed in the same
+						level.
 
                         
 ```
