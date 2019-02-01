@@ -165,7 +165,7 @@ scdiff.py [-h] -i INPUT -t TF_DNA -k CLUSTERS -o OUTPUT [-l LARGE]
 						the targets information for the TFs, which will be used to infer
 						eTFs (TFs predicted based on the expression of themselves instead of the their targets).
 						
-	--spcut SPCUT       Float, optional
+	--spcut SPCUT       Float, optional  
 						By default, scdiff uses p-value=0.05
                         as the cutoff to tell whether the DistanceToAncestor
                         (DTA) of clusters are significantly different.
