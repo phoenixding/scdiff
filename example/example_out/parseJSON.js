@@ -1,6 +1,7 @@
 
 
 
+
 (function(scviz, $, undefined){
 	//global parameters
 	textfontsize=11;
@@ -23,6 +24,13 @@
 		root = nodes[0]; 
 		GL = RL[0];    // list of genes
 		cells = RL[1]; // list of cells
+		ctypes=cells.map(function(d){return d.typeLabel;});
+		utypes=[]
+		for (var ct of ctypes){
+			if (utypes.indexOf(ct)==-1){
+				utypes.push(ct);
+			}
+		}
 		edges = RL[3]; // list of edges
 		dTD = RL[4];
 		scviz.drawTree(root);
@@ -1070,9 +1078,9 @@
 			.attr("d",arc)
 			.attr("transform","translate (150,150)")
 			.attr("fill",function(d,i) { 
-				colorDex=colorDex % 10;
-				var colorChoosen=colorCodes[colorDex];
-				colorDex+=1;
+				colorDex=utypes.indexOf(d[0]);
+				colorDex=colorDex % colorList.length;
+				var colorChoosen=colorList[colorDex];
 				return colorChoosen;}
 				)
 				
@@ -1092,9 +1100,9 @@
 			.text(function(d,i){return d[0]+':'+d[1];})
 			.style("font-size","10px")
 			.style("fill",function(d,i) { 
-				colorDex=colorDex % 10;
-				var colorChoosen=colorCodes[colorDex];
-				colorDex+=1;
+				colorDex=utypes.indexOf(d[0]);
+				colorDex=colorDex % colorList.length;
+				var colorChoosen=colorList[colorDex];
 				return colorChoosen;}
 				);
 	}
@@ -1625,106 +1633,7 @@
 			});
 	
 	}
-	
-	//action on mouse out
-	function outNode(){
-		tooltipsvg
-		.style("opacity", 0)
-		.attr("width",0)
-		.attr("height",0)
-		.selectAll("*").remove();;
-	}
-	
-	// action on mouse over
-	function inNode(){
-		if (d3.select("#tooltipcheck").property("checked")==false){
-			return false;
-		}
-		var CELL=this.__data__.CELL;
-		var ctdict={}
-		for(x of CELL){
-			xlabel=cells[x].typeLabel;
-			if (xlabel in ctdict==false){
-				ctdict[xlabel]=1;
-			}else{
-				ctdict[xlabel]+=1;
-			}
-		}
-
-		var ltdict=[]
-		var asum=0;
-		for (key in ctdict){
-			asum+=ctdict[key];
-			ltdict.push([key,ctdict[key]])
-		}
 		
-		var cellCounter=0;
-		
-		var arc=d3.svg.arc()
-				.innerRadius(100)
-				.outerRadius(150)
-				.startAngle(function(d,i){
-					var sa=2*Math.PI*(cellCounter/asum);
-					return sa;
-					})
-				.endAngle(function(d,i){
-					cellCounter+=d[1];
-					var ea=2*Math.PI*(cellCounter/asum);
-					return ea;
-					});
-			
-		tooltipsvg
-			.style("left",(d3.event.pageX+30)+"px")
-			.style("top",(d3.event.pageY-28)+"px")
-			.style("position","absolute")
-			.style("opacity",1)
-			.style("background","gray")
-			//.style("border","1px solid")
-			.attr("class","tooltipsvg")
-			.attr("width",300)
-			.attr("height",300)
-		
-		var colorCodes=["red","blue","purple","green","lime","magenta","orange","olive","cyan","yellow"];
-		var colorDex=0;
-		tooltipsvg.selectAll("path")
-			.data(ltdict)
-			.enter()
-			//.append("circle")
-			//.attr("r",10);
-			.append("path")
-			.attr("d",arc)
-			.attr("transform","translate (150,150)")
-			.attr("fill",function(d,i) { 
-				colorDex=colorDex % 10;
-				var colorChoosen=colorCodes[colorDex];
-				colorDex+=1;
-				return colorChoosen;}
-				)
-				
-		cellCounter=0;
-		colorDex=0;
-		tooltipsvg.selectAll("text")
-			.data(ltdict)
-			.enter()
-			.append("text")
-			.style("border","1px solid")
-			.attr("transform",function(d,i){
-				var tx=60;
-				var ty=100+i*20;
-				return "translate ("+tx+","+ty+")";
-				})
-			.attr("dy",20)
-			.text(function(d,i){return d[0]+':'+d[1];})
-			.style("font-size","10px")
-			.style("fill",function(d,i) { 
-				colorDex=colorDex % 10;
-				var colorChoosen=colorCodes[colorDex];
-				colorDex+=1;
-				return colorChoosen;}
-				);
-	}
-	
-	
 	// parse json file
 	function parseJSON(data){
 		var data=JSON.parse(data);
