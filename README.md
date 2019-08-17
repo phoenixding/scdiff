@@ -38,7 +38,7 @@ instructions.
 -- scipy >=0.13.3  
 -- numpy >=1.8.2  
 -- matplotlib  >=2.2.3  
--- pydiffmap >=0.1.1  
+-- pydiffmap >=0.1.1,<0.2.0  
 -- imbalanced_learn >=0.4.2   
 
 The python setup.py script (or pip) will try to install these packages automatically.
