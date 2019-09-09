@@ -35,7 +35,10 @@ def GtoJson(G1,GL,dTD):
 	
 	with warnings.catch_warnings():
 		warnings.simplefilter("ignore")
-		dfmap=pdm.DiffusionMap(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
+		try:
+			dfmap=pdm.DiffusionMap(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
+		except:
+			dfmap=pdm.DiffusionMap.from_sklearn(n_evecs = 2, epsilon ='bgh', alpha = 0.5,k=dmk)
 		dfmap_matrix=dfmap.fit_transform(xmatrix)
 		
 	CL=[]
