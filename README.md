@@ -93,7 +93,7 @@ installation fails.
 The above pip installation options should be working for Linux, Window and MacOS systems.   
 For MacOS users, it's recommended to use python3 installation. The default python2 in MacOS has
 some compatibility issues with a few dependent libraries. The users would have to install their own
-version of python2 (e.g. via [Anocanda](https://anaconda.org/)) if they prefer to use python2 in MacOS.  
+version of python2 (e.g. via [Anaconda](https://anaconda.org/)) if they prefer to use python2 in MacOS.  
 
 # USAGE
 
