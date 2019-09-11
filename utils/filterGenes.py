@@ -5,11 +5,12 @@ import csv
 import numpy as np
 
 
-parser=argparse.ArgumentParser(description="Filter noninformative genes for large datasets")
+parser=argparse.ArgumentParser(description="Filter non-informative genes for large datasets")
 parser.add_argument('-i','--input',required=True,help='input single cell RNA-seq expression data')
 parser.add_argument('-s','--std',help="remove genes with standard deviation smaller than the specified cutoff",default=0.5)
 parser.add_argument('-n','--ngenes', help="keep the top n genes with the largest varience",default=5000)
 parser.add_argument('--setime', help="set all time point of all cells to a given number")
+parser.add_argument('-o','--output', help='output for the filtered single cell RNA-seq expression data')
 args = parser.parse_args()
 try:
 	ng=int(args.ngenes)
@@ -18,6 +19,7 @@ except:
 	print("check your input! -s -n")
 	sys.exit(0)
 setime=args.setime 
+output=args.output 
 
 with open(args.input) as f:
 	keptcols=[]
@@ -46,9 +48,17 @@ with open(args.input) as f:
 	scols=range(3)+[3+k for k in range(len(stdlist)) if stdlist[k]>stdcut]
 	
 	f.seek(0)
-	for row in reader:
-		sline=[row[item] for item in scols]
-		sline[1]=sline[1] if setime==None else setime 
-		sline="\t".join(sline)
-		print(sline)
 	
+	if output == None:
+		for row in reader:
+			sline=[row[item] for item in scols]
+			sline[1]=sline[1] if setime==None else setime 
+			sline="\t".join(sline)+'\n'
+			print(sline)
+	else:
+		with open(output, "w") as outputfile:
+			for row in reader:
+				sline=[row[item] for item in scols]
+				sline[1]=sline[1] if setime==None else setime 
+				sline="\t".join(sline)+'\n'
+				outputfile.write(sline)
