@@ -316,7 +316,10 @@ original expression file:
 	If there is no prior knowledge about the starting root cell/cells, users can turn to the help of visualization methods.
 	For example, users can use the [diffusion map] (https://pypi.org/project/pydiffmap/) to help determining the root cell(s). 
 	Users can also use the diffusion map visualization in the CELL PLOT section from the scdiff running results.   
-	![images/diffusion_map.png](images/diffusion_map.png).
+	![images/diffusion_map.png](images/diffusion_map.png). Besides, we also provide a script [utils/guessRootCells.py](utils/guessRootCells.py) to guess the root cells automatically. 
+	The root cells guessing is based on the cell expression entropy.  The original prognitor cells/root cells tend to be higher entropy (more dynamic) compared to those cells with fixed cell fate. 
+	We specify the cells in the first time point with the largest entropy as the root cells.  Using the provided script, the input expression file can be automatically re-processed.   Please re-run the program with
+	the root guessed expression file.   
 * (4) Run scdiff as described in USAGE section (__MUST__)
 * (5) Re-visit the results and re-run the program if needed (__Not Required But Highly Recommended__).  
 With the generated visualizations in the "CELL Plots" section and other results, users will have a better understanding

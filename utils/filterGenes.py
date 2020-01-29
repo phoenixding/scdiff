@@ -43,7 +43,7 @@ with open(args.input) as f:
 		ed=st+span
 		#print(ed)
 	stdcut=sorted(stdlist,reverse=True)[ng]
-	scols=range(3)+[3+k for k in range(len(stdlist)) if stdlist[k]>stdcut]
+	scols=list(range(3))+[3+k for k in range(len(stdlist)) if stdlist[k]>stdcut]
 	
 	f.seek(0)
 	for row in reader:
