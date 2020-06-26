@@ -33,7 +33,7 @@ for i in dtimes:
 	xi=[X[j] for j in range(len(X)) if times[j]==i]
 	yi=[Y[j] for j in range(len(Y)) if times[j]==i]
 	ci=[colors[j] for j in range(len(X)) if times[j]==i]
-	plt.scatter(xi,yi,c=ci,label=i)
+	plt.scatter(xi,yi,c=ci,label=i,s=1,alpha=0.5)
 plt.legend()
 plt.savefig("%s.tsne.pdf"%(args.input),dpi=300)
 
