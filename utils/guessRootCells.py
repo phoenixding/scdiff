@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import pdb,sys,os
 import argparse
-import csv
 import numpy as np
 from sklearn.cluster import KMeans
 import math
