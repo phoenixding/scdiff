@@ -8,6 +8,16 @@
 [![Build Status](https://travis-ci.org/phoenixding/scdiff.svg?branch=master)](https://travis-ci.org/phoenixding/scdiff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+# !!!!NEW!!! 
+# For large single-cell datasets (e.g, > 2k cells), please use the new version of scdiff (scdiff2) at : https://github.com/phoenixding/scdiff2
+SCDIFF 2.0 utilizes HDF5, Sparse matrix, and multi-threading techniques to reduce the resource requirement of the program while improving the efficiency.
+It also incorperates many new clustering and trajectory inference methods for more comprehensive and accurate predictions.  
+
+A few highlights:   
+(1)  VERY EFFICIENT: Analyze 40k cells (~10k genes/cell) within 1-2 hours   (--ncores 12 --maxloop 0)    
+(2)  VERY FLEXIBLE: It was composed of many moving pieces, each can be customized by the users.   
+
+
 # INTRODUCTION 
 <div style="text-align: justify"> 
 Most existing single-cell trajectory inference methods have relied primarily on the assumption that descendant cells are similar to their parents in terms of gene expression levels. 
